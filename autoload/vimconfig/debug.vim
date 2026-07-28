@@ -88,7 +88,7 @@ function! s:JavaDebugResult(error, result) abort
     return
   endif
 
-  if a:error =~? 'Plugin not ready'
+  if a:error =~? 'Plugin not ready\|Command: .* not found'
         \ && s:java_debug_attempts < s:java_debug_max_attempts
     if s:java_debug_attempts == 1 || s:java_debug_attempts % 6 == 0
       echom 'Waiting for coc-java to finish importing the project... (\ds cancels)'

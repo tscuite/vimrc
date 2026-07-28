@@ -104,6 +104,8 @@ rg -Fq 'coc-java-debug' "${vim_root}/scripts/bootstrap.sh" ||
   fail "bootstrap must install coc-java-debug"
 rg -Fq 'scripts/use-system-java.sh' "${vim_root}/scripts/bootstrap.sh" ||
   fail "bootstrap must configure coc-java to use the existing JDK"
+rg -Fq 'Command: .* not found' "${vim_root}/autoload/vimconfig/debug.vim" ||
+  fail "Java debug startup must retry while CoC commands are registering"
 rg -Fq -- '--enable-python' "${vim_root}/scripts/bootstrap.sh" ||
   fail "bootstrap must install the Python debug adapter"
 rg -Fq -- '--enable-go' "${vim_root}/scripts/bootstrap.sh" ||
