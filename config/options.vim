@@ -1,6 +1,10 @@
 set encoding=utf-8
 set fileencodings=utf-8,gb18030,gbk,gb2312,ucs-bom,latin1
 
+" MacVim's Java syntax expects the built-in markdown groups, while
+" vim-markdown defines a different set. Keep regular Javadoc highlighting.
+let g:java_ignore_markdown = 1
+
 set number
 set hidden
 set autoread

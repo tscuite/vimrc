@@ -20,6 +20,10 @@ call assert_equal(
       \ '',
       \ synIDattr(hlID('SignColumn'), 'bg', 'gui'),
       \ 'GUI sign column must use the editor background')
+call assert_equal(
+      \ 1,
+      \ get(g:, 'java_ignore_markdown', 0),
+      \ 'Java syntax must not include the incompatible vim-markdown syntax')
 
 for s:key in ['\p', '\f', '\b', '\h', '\e', '\c',
       \ '\gs', '\gd', '\gb', '\gp',
