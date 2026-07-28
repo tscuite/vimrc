@@ -6,5 +6,6 @@
   "coc.preferences.formatOnSaveFiletypes": [],
   "eslint.autoFixOnSave": false,
   "prettier.disableSuccessMessage": true,
-  "python.analysis.typeCheckingMode": "basic"
+  "python.analysis.typeCheckingMode": "basic",
+  "rust-analyzer.server.path": "~/.vim/scripts/rust-analyzer-wrapper.sh"
 }

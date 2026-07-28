@@ -8,6 +8,7 @@
 - Node.js 20 或更新版本
 - Git、curl、ripgrep
 - Go、Python、Java、Rust 等工具链按实际项目安装
+- Rust 推荐使用 rustup，并安装 `rust-analyzer` 组件
 
 当前机器的 Vim 没有 `+python3`。这不影响 CoC 和普通编辑，但 Vimspector 暂时不可用；使用调试快捷键时只会显示提示。以后安装带 `+python3` 的 Vim 后无需修改快捷键。
 
@@ -98,7 +99,15 @@ Leader 是反斜杠 `\`。
 :CocUpdate
 ```
 
-Markdown 使用 Vim 语法和 Prettier 手动格式化。Dockerfile 使用 Vim 内置语法。Rust 配置已经存在；如果缺少 `rustc` 或 `rust-analyzer`，健康检查会给出警告，不会自动安装系统工具链。
+Markdown 使用 Vim 语法和 Prettier 手动格式化。Dockerfile 使用 Vim 内置语法。
+
+Rust Analyzer 通过 `scripts/rust-analyzer-wrapper.sh` 使用 rustup 的 stable 工具链，避免被其他 Rust 安装覆盖。首次使用前执行：
+
+```bash
+rustup component add rust-analyzer
+```
+
+该包装脚本只影响 CoC 启动的 Rust Analyzer，不修改全局 Shell PATH。
 
 ## 更新
 

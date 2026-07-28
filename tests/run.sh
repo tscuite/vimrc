@@ -14,6 +14,8 @@ fail() {
 [[ -f "${vim_root}/coc-settings.json" ]] || fail "missing coc-settings.json"
 [[ -f "${vim_root}/scripts/bootstrap.sh" ]] || fail "missing scripts/bootstrap.sh"
 [[ -f "${vim_root}/scripts/health-check.sh" ]] || fail "missing scripts/health-check.sh"
+[[ -f "${vim_root}/scripts/rust-analyzer-wrapper.sh" ]] ||
+  fail "missing scripts/rust-analyzer-wrapper.sh"
 [[ -f "${vim_root}/README.md" ]] || fail "missing README.md"
 [[ -f "${vim_root}/.gitignore" ]] || fail "missing .gitignore"
 
@@ -71,6 +73,8 @@ rg -Fq '/docs/' "${vim_root}/.gitignore" ||
   fail ".gitignore must keep planning documents out of the repository"
 rg -Fq '\dd' "${vim_root}/README.md" ||
   fail "README must document debug mappings"
+rg -Fq 'coc-go-data/bin/gopls' "${vim_root}/scripts/health-check.sh" ||
+  fail "health check must recognize CoC-managed gopls"
 
 while IFS= read -r -d '' shell_file; do
   bash -n "${shell_file}"
@@ -79,5 +83,20 @@ done < <(find "${vim_root}/scripts" "${vim_root}/tests" -type f -name '*.sh' -pr
 node -e \
   'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' \
   "${vim_root}/coc-settings.json"
+node -e '
+  const config = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+  if (config["rust-analyzer.server.path"] !== "~/.vim/scripts/rust-analyzer-wrapper.sh") {
+    process.exit(1);
+  }
+' "${vim_root}/coc-settings.json"
+
+if ! health_output="$("${vim_root}/scripts/health-check.sh" 2>&1)"; then
+  printf '%s\n' "${health_output}" >&2
+  fail "health check returned a required failure"
+fi
+if [[ "${health_output}" == *'Abort trap'* ]]; then
+  printf '%s\n' "${health_output}" >&2
+  fail "health check leaked a crashing tool diagnostic"
+fi
 
 printf 'PASS: Vim configuration assertions and static checks\n'

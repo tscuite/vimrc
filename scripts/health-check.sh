@@ -106,10 +106,49 @@ else
   warn 'coc.nvim plugin not installed'
 fi
 
-for optional_command in \
-  go gopls python3 java cargo rustc rust-analyzer; do
+for optional_command in go python3 java cargo; do
   check_optional_command "${optional_command}"
 done
+
+coc_config_root="${XDG_CONFIG_HOME:-${HOME:-}/.config}/coc"
+managed_gopls="${coc_config_root}/extensions/coc-go-data/bin/gopls"
+if command -v gopls >/dev/null 2>&1; then
+  pass "gopls: $(command -v gopls)"
+elif [[ -x "${managed_gopls}" ]]; then
+  pass "gopls managed by coc-go: ${managed_gopls}"
+else
+  warn 'gopls not installed; activate coc-go or run :CocCommand go.install.gopls'
+fi
+
+if command -v rustup >/dev/null 2>&1 &&
+  rustup run stable rustc --version >/dev/null 2>&1; then
+  pass "rustc via rustup: $(rustup run stable rustc --version)"
+  path_rustc="$(command -v rustc || true)"
+  rustup_rustc="$(rustup which rustc 2>/dev/null || true)"
+  if [[ -n "${path_rustc}" && "${path_rustc}" != "${rustup_rustc}" ]]; then
+    warn 'PATH rustc is not rustup-managed; Vim Rust tooling uses the rustup toolchain'
+  fi
+elif command -v rustc >/dev/null 2>&1 &&
+  node -e '
+    const { spawnSync } = require("child_process");
+    const result = spawnSync(process.argv[1], ["--version"], { stdio: "ignore" });
+    process.exit(result.status === 0 ? 0 : 1);
+  ' "$(command -v rustc)"; then
+  pass "rustc: $(rustc --version)"
+else
+  warn 'no usable Rust compiler found'
+fi
+
+rust_wrapper="${vim_root}/scripts/rust-analyzer-wrapper.sh"
+if command -v rust-analyzer >/dev/null 2>&1 &&
+  rust-analyzer --version >/dev/null 2>&1; then
+  pass "rust-analyzer: $(command -v rust-analyzer)"
+elif [[ -x "${rust_wrapper}" ]] &&
+  "${rust_wrapper}" --version >/dev/null 2>&1; then
+  pass "rust-analyzer via rustup wrapper: ${rust_wrapper}"
+else
+  warn 'rust-analyzer unavailable; run rustup component add rust-analyzer'
+fi
 
 printf '\nSummary: %d required failure(s), %d warning(s)\n' \
   "${required_failures}" \
