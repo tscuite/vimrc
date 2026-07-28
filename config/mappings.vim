@@ -32,53 +32,9 @@ nnoremap <silent> <leader>x :xit<CR>
 nnoremap <silent> [b :bprevious<CR>
 nnoremap <silent> ]b :bnext<CR>
 
-function! s:EnsureVimspector() abort
-  if !has('python3')
-    call s:Warn('Vimspector requires Vim compiled with +python3')
-    return 0
-  endif
-  if !exists('*plug#load')
-    call s:Warn('Vimspector is unavailable. Run ~/.vim/scripts/bootstrap.sh')
-    return 0
-  endif
-  if !exists('g:loaded_vimpector')
-    try
-      call plug#load('vimspector')
-    catch
-      call s:Warn('Unable to load Vimspector: ' . v:exception)
-      return 0
-    endtry
-  endif
-  return 1
-endfunction
-
-function! s:Debug(action) abort
-  if !s:EnsureVimspector()
-    return
-  endif
-
-  try
-    if a:action ==# 'continue'
-      call vimspector#Continue()
-    elseif a:action ==# 'breakpoint'
-      call vimspector#ToggleBreakpoint()
-    elseif a:action ==# 'step-over'
-      call vimspector#StepOver()
-    elseif a:action ==# 'step-in'
-      call vimspector#StepInto()
-    elseif a:action ==# 'step-out'
-      call vimspector#StepOut()
-    elseif a:action ==# 'stop'
-      call vimspector#Stop()
-    endif
-  catch
-    call s:Warn('Vimspector error: ' . v:exception)
-  endtry
-endfunction
-
-nnoremap <silent> <leader>dd :call <SID>Debug('continue')<CR>
-nnoremap <silent> <leader>db :call <SID>Debug('breakpoint')<CR>
-nnoremap <silent> <leader>dn :call <SID>Debug('step-over')<CR>
-nnoremap <silent> <leader>di :call <SID>Debug('step-in')<CR>
-nnoremap <silent> <leader>do :call <SID>Debug('step-out')<CR>
-nnoremap <silent> <leader>ds :call <SID>Debug('stop')<CR>
+nnoremap <silent> <leader>dd :call vimconfig#debug#run('continue')<CR>
+nnoremap <silent> <leader>db :call vimconfig#debug#run('breakpoint')<CR>
+nnoremap <silent> <leader>dn :call vimconfig#debug#run('step-over')<CR>
+nnoremap <silent> <leader>di :call vimconfig#debug#run('step-in')<CR>
+nnoremap <silent> <leader>do :call vimconfig#debug#run('step-out')<CR>
+nnoremap <silent> <leader>ds :call vimconfig#debug#run('stop')<CR>

@@ -3,6 +3,12 @@
 
 let g:copilot_no_tab_map = 1
 let g:vimspector_enable_mappings = ''
+let g:vimspector_install_gadgets = [
+      \ 'debugpy',
+      \ 'delve',
+      \ 'vscode-js-debug',
+      \ 'CodeLLDB',
+      \ ]
 
 let g:go_gopls_enabled = 0
 let g:go_code_completion_enabled = 0

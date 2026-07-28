@@ -54,6 +54,7 @@ if exists('g:coc_global_extensions')
         \ 'coc-tsserver',
         \ '@yaegassy/coc-volar',
         \ 'coc-java',
+        \ 'coc-java-debug',
         \ 'coc-rust-analyzer',
         \ 'coc-json',
         \ 'coc-eslint',
@@ -66,6 +67,10 @@ if exists('g:coc_global_extensions')
   endfor
 endif
 call assert_false(exists('g:plug_url_format'), 'Plugin mirror must remain disabled')
+call assert_equal(
+      \ ['debugpy', 'delve', 'vscode-js-debug', 'CodeLLDB'],
+      \ get(g:, 'vimspector_install_gadgets', []),
+      \ 'Vimspector adapters must be reproducible')
 
 function! s:AssertIndent(filetype, width, uses_spaces) abort
   enew!
@@ -74,6 +79,17 @@ function! s:AssertIndent(filetype, width, uses_spaces) abort
   call assert_equal(a:width, &l:shiftwidth, a:filetype . ' shiftwidth')
   call assert_equal(a:width, &l:tabstop, a:filetype . ' tabstop')
   call assert_equal(a:uses_spaces, &l:expandtab, a:filetype . ' expandtab')
+  if a:filetype ==# 'java'
+    let l:debug_mapping = maparg('\dd', 'n', 0, 1)
+    call assert_equal(
+          \ 1,
+          \ get(l:debug_mapping, 'buffer', 0),
+          \ 'Java debug launcher must be buffer-local')
+    call assert_match(
+          \ 'vimconfig#debug#java',
+          \ get(l:debug_mapping, 'rhs', ''),
+          \ 'Java \dd must use the coc-java debugger bridge')
+  endif
   bwipeout!
 endfunction
 

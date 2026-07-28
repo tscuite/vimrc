@@ -13,7 +13,7 @@ die() {
   exit 1
 }
 
-for required_command in vim git curl node; do
+for required_command in vim git curl node python3 go; do
   command -v "${required_command}" >/dev/null 2>&1 ||
     die "missing required command: ${required_command}"
 done
@@ -64,6 +64,7 @@ coc_extensions=(
   coc-tsserver
   @yaegassy/coc-volar
   coc-java
+  coc-java-debug
   coc-rust-analyzer
   coc-json
   coc-eslint
@@ -79,6 +80,27 @@ vim \
   -es \
   "+CocInstall -sync ${coc_extensions[*]}" \
   +qa
+
+vimspector_installer="${vim_root}/plugged/vimspector/install_gadget.py"
+debugger_python="${VIMSPECTOR_PYTHON:-}"
+if [[ -z "${debugger_python}" && -x /opt/homebrew/bin/python3 ]]; then
+  debugger_python=/opt/homebrew/bin/python3
+elif [[ -z "${debugger_python}" ]]; then
+  debugger_python="$(command -v python3)"
+fi
+
+[[ -f "${vimspector_installer}" ]] ||
+  die "missing Vimspector installer: ${vimspector_installer}"
+[[ -x "${debugger_python}" ]] ||
+  die "VIMSPECTOR_PYTHON is not executable: ${debugger_python}"
+
+info "Installing Vimspector debug adapters"
+"${debugger_python}" "${vimspector_installer}" \
+  --update-gadget-config \
+  --enable-python \
+  --enable-go \
+  --enable-rust \
+  --force-enable-node
 
 info "Writing plugin snapshot"
 vim \

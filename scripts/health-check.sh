@@ -74,6 +74,7 @@ for config_file in \
   config/plugins.vim \
   config/coc.vim \
   config/mappings.vim \
+  autoload/vimconfig/debug.vim \
   coc-settings.json; do
   if [[ -r "${vim_root}/${config_file}" ]]; then
     pass "config present: ${config_file}"
@@ -109,11 +110,36 @@ else
   warn 'coc.nvim plugin not installed'
 fi
 
+coc_config_root="${XDG_CONFIG_HOME:-${HOME:-}/.config}/coc"
+java_debug_root="${coc_config_root}/extensions/node_modules/coc-java-debug"
+if find "${java_debug_root}/server" \
+  -maxdepth 1 \
+  -type f \
+  -name 'com.microsoft.java.debug.plugin-*.jar' \
+  -print \
+  -quit 2>/dev/null | rg -q .; then
+  pass 'Java debug adapter installed through coc-java-debug'
+else
+  warn 'Java debug adapter missing; run :CocInstall coc-java-debug'
+fi
+
+gadget_manifest="${vim_root}/plugged/vimspector/gadgets/macos/.gadgets.json"
+if [[ -r "${gadget_manifest}" ]]; then
+  for adapter in debugpy delve js-debug CodeLLDB; do
+    if rg -Fq "\"${adapter}\"" "${gadget_manifest}"; then
+      pass "Vimspector adapter installed: ${adapter}"
+    else
+      warn "Vimspector adapter missing: ${adapter}"
+    fi
+  done
+else
+  warn 'Vimspector adapters are not installed; run scripts/bootstrap.sh'
+fi
+
 for optional_command in go python3 java cargo; do
   check_optional_command "${optional_command}"
 done
 
-coc_config_root="${XDG_CONFIG_HOME:-${HOME:-}/.config}/coc"
 managed_gopls="${coc_config_root}/extensions/coc-go-data/bin/gopls"
 if command -v gopls >/dev/null 2>&1; then
   pass "gopls: $(command -v gopls)"
