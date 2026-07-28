@@ -12,9 +12,9 @@ let g:coc_global_extensions = [
       \ '@yaegassy/coc-ruff',
       \ ]
 
-" Prefer the user's existing Java 17. VIM_JAVA_HOME keeps this portable,
-" while the explicit Zulu path matches the primary macOS workstation.
-function! s:IsJava17Home(java_home) abort
+" Reuse existing JDKs: Java 21 runs current JDT.LS, while Java 17 remains
+" the default project and Gradle runtime.
+function! s:IsJavaHome(java_home, major) abort
   if !executable(a:java_home . '/bin/java')
         \ || !executable(a:java_home . '/bin/javac')
         \ || !filereadable(a:java_home . '/release')
@@ -23,32 +23,32 @@ function! s:IsJava17Home(java_home) abort
 
   return match(
         \ readfile(a:java_home . '/release', '', 10),
-        \ '^JAVA_VERSION="17\.') >= 0
+        \ '^JAVA_VERSION="' . a:major . '\.') >= 0
 endfunction
 
-function! s:FindJava17Home() abort
+function! s:FindJavaHome(major, environment_name, preferred_home) abort
   let l:candidates = []
-  if exists('$VIM_JAVA_HOME') && !empty($VIM_JAVA_HOME)
-    call add(l:candidates, expand($VIM_JAVA_HOME))
+  let l:environment_home = getenv(a:environment_name)
+  if !empty(l:environment_home)
+    call add(l:candidates, expand(l:environment_home))
   endif
-  if has('macunix')
-    call add(
-          \ l:candidates,
-          \ '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home')
+  if !empty(a:preferred_home)
+    call add(l:candidates, a:preferred_home)
   endif
   if exists('$JAVA_HOME') && !empty($JAVA_HOME)
     call add(l:candidates, expand($JAVA_HOME))
   endif
 
   for l:java_home in l:candidates
-    if s:IsJava17Home(l:java_home)
+    if s:IsJavaHome(l:java_home, a:major)
       return resolve(l:java_home)
     endif
   endfor
 
   if has('macunix') && executable('/usr/libexec/java_home')
-    let l:java_home = trim(system('/usr/libexec/java_home -v 17 2>/dev/null'))
-    if !v:shell_error && s:IsJava17Home(l:java_home)
+    let l:command = '/usr/libexec/java_home -v ' . a:major . ' 2>/dev/null'
+    let l:java_home = trim(system(l:command))
+    if !v:shell_error && s:IsJavaHome(l:java_home, a:major)
       return resolve(l:java_home)
     endif
   endif
@@ -56,16 +56,32 @@ function! s:FindJava17Home() abort
   return ''
 endfunction
 
-let g:vim_java_home = s:FindJava17Home()
-if !empty(g:vim_java_home)
+let g:vim_java_home = s:FindJavaHome(
+      \ 17,
+      \ 'VIM_JAVA_HOME',
+      \ has('macunix')
+      \   ? '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
+      \   : '')
+let g:vim_java_tooling_home = s:FindJavaHome(
+      \ 21,
+      \ 'VIM_JAVA_TOOLING_HOME',
+      \ has('macunix')
+      \   ? '/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home'
+      \   : '')
+if !empty(g:vim_java_home) && !empty(g:vim_java_tooling_home)
   let g:coc_user_config = get(g:, 'coc_user_config', {})
-  let g:coc_user_config['java.jdt.ls.java.home'] = g:vim_java_home
+  let g:coc_user_config['java.jdt.ls.java.home'] =
+        \ g:vim_java_tooling_home
   let g:coc_user_config['java.import.gradle.java.home'] = g:vim_java_home
   let g:coc_user_config['java.configuration.runtimes'] = [
         \ {
         \   'name': 'JavaSE-17',
         \   'path': g:vim_java_home,
         \   'default': v:true,
+        \ },
+        \ {
+        \   'name': 'JavaSE-21',
+        \   'path': g:vim_java_tooling_home,
         \ },
         \ ]
 endif

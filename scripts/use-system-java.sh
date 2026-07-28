@@ -7,31 +7,36 @@ die() {
 }
 
 find_java_home() {
+  local major="$1"
+  local environment_name="$2"
+  local preferred_home="$3"
   local candidate
   local candidates=()
 
-  if [[ -n "${VIM_JAVA_HOME:-}" ]]; then
-    candidates+=("${VIM_JAVA_HOME}")
+  if [[ -n "${!environment_name:-}" ]]; then
+    candidates+=("${!environment_name}")
   fi
-  if [[ "$(uname -s)" == "Darwin" ]]; then
-    candidates+=(
-      "/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home"
-    )
+  if [[ -n "${preferred_home}" ]]; then
+    candidates+=("${preferred_home}")
   fi
   if [[ -n "${JAVA_HOME:-}" ]]; then
     candidates+=("${JAVA_HOME}")
   fi
 
   for candidate in "${candidates[@]}"; do
-    if [[ -x "${candidate}/bin/java" && -x "${candidate}/bin/javac" ]]; then
+    if [[ -x "${candidate}/bin/java" &&
+      -x "${candidate}/bin/javac" &&
+      "$("${candidate}/bin/javac" -version 2>&1)" == javac\ "${major}".* ]]; then
       printf '%s\n' "${candidate}"
       return
     fi
   done
 
   if [[ -x /usr/libexec/java_home ]]; then
-    candidate="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
-    if [[ -x "${candidate}/bin/java" && -x "${candidate}/bin/javac" ]]; then
+    candidate="$(/usr/libexec/java_home -v "${major}" 2>/dev/null || true)"
+    if [[ -x "${candidate}/bin/java" &&
+      -x "${candidate}/bin/javac" &&
+      "$("${candidate}/bin/javac" -version 2>&1)" == javac\ "${major}".* ]]; then
       printf '%s\n' "${candidate}"
       return
     fi
@@ -40,14 +45,16 @@ find_java_home() {
   return 1
 }
 
-java_home="$(find_java_home)" ||
+project_java_home="$(find_java_home \
+  17 \
+  VIM_JAVA_HOME \
+  '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home')" ||
   die 'Java 17 JDK not found; set VIM_JAVA_HOME to an existing JDK 17'
-
-javac_version="$("${java_home}/bin/javac" -version 2>&1)"
-java_major="${javac_version#javac }"
-java_major="${java_major%%.*}"
-[[ "${java_major}" == "17" ]] ||
-  die "expected Java 17 at ${java_home}, found ${javac_version}"
+tooling_java_home="$(find_java_home \
+  21 \
+  VIM_JAVA_TOOLING_HOME \
+  '/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home')" ||
+  die 'Java 21 JDK not found; set VIM_JAVA_TOOLING_HOME to an existing JDK 21'
 
 case "$(uname -s)" in
   Darwin)
@@ -82,7 +89,7 @@ mkdir -p "${compat_parent}"
 
 if [[ -L "${compat_link}" ]]; then
   current_target="$(readlink "${compat_link}")"
-  if [[ "${current_target}" != "${java_home}" ]]; then
+  if [[ "${current_target}" != "${tooling_java_home}" ]]; then
     unlink "${compat_link}"
   fi
 elif [[ -e "${compat_link}" ]]; then
@@ -90,8 +97,11 @@ elif [[ -e "${compat_link}" ]]; then
 fi
 
 if [[ ! -L "${compat_link}" ]]; then
-  ln -s "${java_home}" "${compat_link}"
+  ln -s "${tooling_java_home}" "${compat_link}"
 fi
 
-printf 'Using existing Java 17 for coc-java: %s\n' "${java_home}"
+printf 'Using existing Java 21 for coc-java tooling: %s\n' \
+  "${tooling_java_home}"
+printf 'Using existing Java 17 for projects and Gradle: %s\n' \
+  "${project_java_home}"
 printf 'Compatibility link (contains no JDK copy): %s\n' "${compat_link}"

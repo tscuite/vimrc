@@ -112,22 +112,44 @@ fi
 
 coc_config_root="${XDG_CONFIG_HOME:-${HOME:-}/.config}/coc"
 java_debug_root="${coc_config_root}/extensions/node_modules/coc-java-debug"
-java_home='/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
+project_java_home='/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
 if [[ -n "${VIM_JAVA_HOME:-}" ]]; then
-  java_home="${VIM_JAVA_HOME}"
-elif [[ ! -x "${java_home}/bin/javac" && -x /usr/libexec/java_home ]]; then
-  java_home="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
+  project_java_home="${VIM_JAVA_HOME}"
+elif [[ ! -x "${project_java_home}/bin/javac" &&
+  -x /usr/libexec/java_home ]]; then
+  project_java_home="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
 fi
 
-if [[ -x "${java_home}/bin/java" && -x "${java_home}/bin/javac" ]]; then
-  java_version="$("${java_home}/bin/javac" -version 2>&1)"
+if [[ -x "${project_java_home}/bin/java" &&
+  -x "${project_java_home}/bin/javac" ]]; then
+  java_version="$("${project_java_home}/bin/javac" -version 2>&1)"
   if [[ "${java_version}" == javac\ 17.* ]]; then
-    pass "coc-java tooling JDK: ${java_home} (${java_version})"
+    pass "Java project JDK: ${project_java_home} (${java_version})"
   else
-    warn "coc-java requires Java 17; found ${java_version} at ${java_home}"
+    warn "projects require Java 17; found ${java_version} at ${project_java_home}"
   fi
 else
   warn 'Java 17 JDK not found; set VIM_JAVA_HOME'
+fi
+
+tooling_java_home='/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home'
+if [[ -n "${VIM_JAVA_TOOLING_HOME:-}" ]]; then
+  tooling_java_home="${VIM_JAVA_TOOLING_HOME}"
+elif [[ ! -x "${tooling_java_home}/bin/javac" &&
+  -x /usr/libexec/java_home ]]; then
+  tooling_java_home="$(/usr/libexec/java_home -v 21 2>/dev/null || true)"
+fi
+
+if [[ -x "${tooling_java_home}/bin/java" &&
+  -x "${tooling_java_home}/bin/javac" ]]; then
+  java_version="$("${tooling_java_home}/bin/javac" -version 2>&1)"
+  if [[ "${java_version}" == javac\ 21.* ]]; then
+    pass "coc-java tooling JDK: ${tooling_java_home} (${java_version})"
+  else
+    warn "coc-java tooling requires Java 21; found ${java_version}"
+  fi
+else
+  warn 'Java 21 JDK not found; set VIM_JAVA_TOOLING_HOME'
 fi
 
 case "$(uname -m)" in
@@ -141,8 +163,9 @@ esac
 coc_java_link="${coc_config_root}/extensions/coc-java-data/jdk-17.0.8"
 coc_java_link+="/javajre-$(uname -s | tr '[:upper:]' '[:lower:]')"
 coc_java_link+="-${coc_java_arch}/jre"
-if [[ -L "${coc_java_link}" && "$(readlink "${coc_java_link}")" == "${java_home}" ]]; then
-  pass 'coc-java reuses the existing Java 17 without a private JDK copy'
+if [[ -L "${coc_java_link}" &&
+  "$(readlink "${coc_java_link}")" == "${tooling_java_home}" ]]; then
+  pass 'coc-java reuses the existing Java 21 without a private JDK copy'
 else
   warn 'coc-java system-JDK link missing; run scripts/use-system-java.sh'
 fi

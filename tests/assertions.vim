@@ -89,6 +89,7 @@ call assert_equal(
       \ 'Global Java launch configuration must be Java-only')
 
 let s:zulu_17 = '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
+let s:zulu_21 = '/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home'
 if executable(s:zulu_17 . '/bin/javac')
   call assert_equal(
         \ s:zulu_17,
@@ -96,12 +97,18 @@ if executable(s:zulu_17 . '/bin/javac')
         \ 'Existing Zulu 17 must be preferred')
   call assert_equal(
         \ s:zulu_17,
-        \ get(get(g:, 'coc_user_config', {}), 'java.jdt.ls.java.home', ''),
-        \ 'coc-java must launch with the existing Zulu 17')
-  call assert_equal(
-        \ s:zulu_17,
         \ get(get(g:, 'coc_user_config', {}), 'java.import.gradle.java.home', ''),
         \ 'Gradle import must use the existing Zulu 17')
+endif
+if executable(s:zulu_21 . '/bin/javac')
+  call assert_equal(
+        \ s:zulu_21,
+        \ get(g:, 'vim_java_tooling_home', ''),
+        \ 'Existing Zulu 21 must be preferred for Java tooling')
+  call assert_equal(
+        \ s:zulu_21,
+        \ get(get(g:, 'coc_user_config', {}), 'java.jdt.ls.java.home', ''),
+        \ 'coc-java must launch with the existing Zulu 21')
 endif
 
 function! s:AssertIndent(filetype, width, uses_spaces) abort

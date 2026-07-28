@@ -8,8 +8,7 @@
 - Node.js 20 或更新版本
 - Git、curl、ripgrep、Python 3、Go
 - Go、Python、Java、Rust 等工具链由用户自行安装
-- Java 使用已有的 JDK 17；本机默认识别
-  `/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home`
+- Java 项目使用已有的 Zulu 17；`coc-java` 的 JDT.LS 使用已有的 Zulu 21
 - Rust 推荐使用 rustup，并安装 `rust-analyzer` 组件
 
 当前 zsh 已配置 `alias vim='mvim -v'`，日常执行 `vim` 时使用的是 Homebrew MacVim 的终端模式，包含 `+python3`，因此 Vimspector 可以加载。macOS 自带的 `/usr/bin/vim` 没有 `+python3`；绕过别名直接使用它时，调试快捷键只会显示提示。
@@ -29,14 +28,28 @@ bash ~/.vim/scripts/health-check.sh
 
 macOS 优先使用 Homebrew Python 安装调试适配器，避免系统旧 Python 的证书和架构问题。需要指定其他解释器时，可设置 `VIMSPECTOR_PYTHON`。
 
-Java 默认复用上面的 Zulu 17。需要换路径时：
+Java 项目和 Gradle 默认使用：
 
-```bash
-VIM_JAVA_HOME=/path/to/jdk-17 bash ~/.vim/scripts/bootstrap.sh
+```text
+/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
 ```
 
-安装脚本会给 `coc-java` 创建一个指向现有 JDK 的兼容链接；该链接不复制
-JDK，也不会修改 `/Library/Java`。
+当前 JDT.LS 的部分模块要求 Java 21，因此编辑器语言服务使用本机已有的：
+
+```text
+/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
+```
+
+这两个路径都只复用现有 JDK。需要换路径时：
+
+```bash
+VIM_JAVA_HOME=/path/to/jdk-17 \
+VIM_JAVA_TOOLING_HOME=/path/to/jdk-21 \
+  bash ~/.vim/scripts/bootstrap.sh
+```
+
+安装脚本会给 `coc-java` 创建一个指向现有 JDK 21 的兼容链接；该链接不
+复制 JDK，也不会修改 `/Library/Java`。项目的 Java 版本仍为 17。
 
 `bootstrap.sh` 只从官方 GitHub 下载 Vim-Plug 和声明的插件。旧镜像配置仍保留在 `config/plugins.vim` 中，但已注释：
 
