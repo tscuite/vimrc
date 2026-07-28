@@ -4,6 +4,8 @@ endif
 
 set background=light
 silent! colorscheme default
+highlight SignColumn ctermbg=NONE guibg=NONE
+highlight FoldColumn ctermbg=NONE guibg=NONE
 
 function! VimConfigCocStatus() abort
   try

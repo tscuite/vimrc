@@ -12,6 +12,14 @@ call assert_equal(
       \ 'default',
       \ get(g:, 'colors_name', 'default'),
       \ 'Keep the original Vim color scheme')
+call assert_equal(
+      \ '',
+      \ synIDattr(hlID('SignColumn'), 'bg', 'cterm'),
+      \ 'Sign column must use the terminal background')
+call assert_equal(
+      \ '',
+      \ synIDattr(hlID('SignColumn'), 'bg', 'gui'),
+      \ 'GUI sign column must use the editor background')
 
 for s:key in ['\p', '\f', '\b', '\h', '\e', '\c',
       \ '\gs', '\gd', '\gb', '\gp',
