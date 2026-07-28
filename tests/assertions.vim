@@ -71,6 +71,38 @@ call assert_equal(
       \ ['debugpy', 'delve', 'vscode-js-debug', 'CodeLLDB'],
       \ get(g:, 'vimspector_install_gadgets', []),
       \ 'Vimspector adapters must be reproducible')
+call assert_equal(
+      \ '${AdapterPort}',
+      \ get(
+      \   get(get(g:, 'vimspector_adapters', {}), 'coc-java-debug', {}),
+      \   'port',
+      \   ''),
+      \ 'Global coc-java-debug adapter must be configured')
+let s:java_launch = get(get(g:, 'vimspector_configurations', {}), 'launch', {})
+call assert_equal(
+      \ 'coc-java-debug',
+      \ get(s:java_launch, 'adapter', ''),
+      \ 'Global Java launch configuration must use coc-java-debug')
+call assert_equal(
+      \ ['java'],
+      \ get(s:java_launch, 'filetypes', []),
+      \ 'Global Java launch configuration must be Java-only')
+
+let s:zulu_17 = '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
+if executable(s:zulu_17 . '/bin/javac')
+  call assert_equal(
+        \ s:zulu_17,
+        \ get(g:, 'vim_java_home', ''),
+        \ 'Existing Zulu 17 must be preferred')
+  call assert_equal(
+        \ s:zulu_17,
+        \ get(get(g:, 'coc_user_config', {}), 'java.jdt.ls.java.home', ''),
+        \ 'coc-java must launch with the existing Zulu 17')
+  call assert_equal(
+        \ s:zulu_17,
+        \ get(get(g:, 'coc_user_config', {}), 'java.import.gradle.java.home', ''),
+        \ 'Gradle import must use the existing Zulu 17')
+endif
 
 function! s:AssertIndent(filetype, width, uses_spaces) abort
   enew!

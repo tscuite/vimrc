@@ -7,12 +7,16 @@
 - Vim 9.0.0438 或更新版本，并包含 `+job`、`+channel`
 - Node.js 20 或更新版本
 - Git、curl、ripgrep、Python 3、Go
-- Go、Python、Java、Rust 等工具链按实际项目安装
+- Go、Python、Java、Rust 等工具链由用户自行安装
+- Java 使用已有的 JDK 17；本机默认识别
+  `/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home`
 - Rust 推荐使用 rustup，并安装 `rust-analyzer` 组件
 
 当前 zsh 已配置 `alias vim='mvim -v'`，日常执行 `vim` 时使用的是 Homebrew MacVim 的终端模式，包含 `+python3`，因此 Vimspector 可以加载。macOS 自带的 `/usr/bin/vim` 没有 `+python3`；绕过别名直接使用它时，调试快捷键只会显示提示。
 
-`bootstrap.sh` 会安装 Java、Python、JavaScript/TypeScript、Go 和 Rust 的调试适配器。Markdown 与 Dockerfile 不需要源码调试器。
+`bootstrap.sh` 只安装 Java、Python、JavaScript/TypeScript、Go 和 Rust
+的编辑器插件及调试适配器，不安装或替换系统语言运行时。Markdown 与
+Dockerfile 不需要源码调试器。
 
 ## 安装
 
@@ -24,6 +28,15 @@ bash ~/.vim/scripts/health-check.sh
 ```
 
 macOS 优先使用 Homebrew Python 安装调试适配器，避免系统旧 Python 的证书和架构问题。需要指定其他解释器时，可设置 `VIMSPECTOR_PYTHON`。
+
+Java 默认复用上面的 Zulu 17。需要换路径时：
+
+```bash
+VIM_JAVA_HOME=/path/to/jdk-17 bash ~/.vim/scripts/bootstrap.sh
+```
+
+安装脚本会给 `coc-java` 创建一个指向现有 JDK 的兼容链接；该链接不复制
+JDK，也不会修改 `/Library/Java`。
 
 `bootstrap.sh` 只从官方 GitHub 下载 Vim-Plug 和声明的插件。旧镜像配置仍保留在 `config/plugins.vim` 中，但已注释：
 
@@ -90,7 +103,11 @@ Leader 是反斜杠 `\`。
 
 没有配置 F2、F5、F9、F10、F11、F12 等功能键。
 
-在 Java 文件中，`\dd` 会走 `coc-java-debug`：CoC 解析当前主类、Gradle classpath 和项目名，再连接 Vimspector。首次使用会在 CoC 工作区根目录生成 `.vimspector.json`。若 Java 服务仍在导入项目，启动请求会自动等待，`\ds` 可取消等待。安装或更新 `coc-java-debug` 后，需要重启 Vim，或执行 `:CocRestart`。
+在 Java 文件中，`\dd` 会走 `coc-java-debug`：CoC 解析当前主类、Gradle
+classpath 和项目名，再连接 Vimspector。Java 的启动配置已经全局定义，
+不会向业务仓库生成 `.vimspector.json`。若 Java 服务仍在导入项目，启动
+请求会自动等待，`\ds` 可取消等待。安装或更新 `coc-java-debug` 后，需要
+重启 Vim，或执行 `:CocRestart`。
 
 其余语言已安装的适配器如下：
 
@@ -101,7 +118,8 @@ Leader 是反斜杠 `\`。
 | Go | `delve` |
 | Rust | `CodeLLDB` |
 
-适配器负责“怎么调试”，项目的 `.vimspector.json` 负责“启动哪个程序及参数”。Java 的启动配置由 `coc-java-debug` 自动生成；其他语言仍可按项目添加启动配置。
+适配器负责“怎么调试”，项目的 `.vimspector.json` 负责“启动哪个程序及
+参数”。Java 已有不落盘的全局启动配置；其他语言仍可按项目添加启动配置。
 
 以后更新已安装的适配器可执行 `:VimspectorUpdate`。
 

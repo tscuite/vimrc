@@ -81,6 +81,9 @@ vim \
   "+CocInstall -sync ${coc_extensions[*]}" \
   +qa
 
+info "Configuring coc-java to reuse the existing Java 17"
+"${vim_root}/scripts/use-system-java.sh"
+
 vimspector_installer="${vim_root}/plugged/vimspector/install_gadget.py"
 debugger_python="${VIMSPECTOR_PYTHON:-}"
 if [[ -z "${debugger_python}" && -x /opt/homebrew/bin/python3 ]]; then

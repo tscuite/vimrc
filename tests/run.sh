@@ -16,6 +16,8 @@ fail() {
 [[ -f "${vim_root}/scripts/health-check.sh" ]] || fail "missing scripts/health-check.sh"
 [[ -f "${vim_root}/scripts/rust-analyzer-wrapper.sh" ]] ||
   fail "missing scripts/rust-analyzer-wrapper.sh"
+[[ -f "${vim_root}/scripts/use-system-java.sh" ]] ||
+  fail "missing scripts/use-system-java.sh"
 [[ -f "${vim_root}/autoload/vimconfig/debug.vim" ]] ||
   fail "missing autoload/vimconfig/debug.vim"
 [[ -f "${vim_root}/README.md" ]] || fail "missing README.md"
@@ -90,13 +92,18 @@ node -e '
   if (config["rust-analyzer.server.path"] !== "~/.vim/scripts/rust-analyzer-wrapper.sh") {
     process.exit(1);
   }
-  if (config["java.debug.vimspector.config.createIfNotExists"] !== true) {
+  if (config["java.jdt.ls.javac.enabled"] !== "off") {
+    process.exit(1);
+  }
+  if (config["java.debug.vimspector.config.createIfNotExists"] !== false) {
     process.exit(1);
   }
 ' "${vim_root}/coc-settings.json"
 
 rg -Fq 'coc-java-debug' "${vim_root}/scripts/bootstrap.sh" ||
   fail "bootstrap must install coc-java-debug"
+rg -Fq 'scripts/use-system-java.sh' "${vim_root}/scripts/bootstrap.sh" ||
+  fail "bootstrap must configure coc-java to use the existing JDK"
 rg -Fq -- '--enable-python' "${vim_root}/scripts/bootstrap.sh" ||
   fail "bootstrap must install the Python debug adapter"
 rg -Fq -- '--enable-go' "${vim_root}/scripts/bootstrap.sh" ||

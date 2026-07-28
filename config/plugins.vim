@@ -9,6 +9,30 @@ let g:vimspector_install_gadgets = [
       \ 'vscode-js-debug',
       \ 'CodeLLDB',
       \ ]
+let g:vimspector_adapters = {
+      \ 'coc-java-debug': {
+      \   'port': '${AdapterPort}',
+      \ },
+      \ }
+let g:vimspector_configurations = {
+      \ 'launch': {
+      \   'adapter': 'coc-java-debug',
+      \   'filetypes': ['java'],
+      \   'configuration': {
+      \     'args': '${args}',
+      \     'request': 'launch',
+      \     'projectName': '${ProjectName}',
+      \     'mainClass': '${MainClass}',
+      \     'classPaths': ['*${ClassPaths}'],
+      \   },
+      \   'breakpoints': {
+      \     'exception': {
+      \       'caught': 'N',
+      \       'uncaught': 'N',
+      \     },
+      \   },
+      \ },
+      \ }
 
 let g:go_gopls_enabled = 0
 let g:go_code_completion_enabled = 0

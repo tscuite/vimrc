@@ -112,6 +112,53 @@ fi
 
 coc_config_root="${XDG_CONFIG_HOME:-${HOME:-}/.config}/coc"
 java_debug_root="${coc_config_root}/extensions/node_modules/coc-java-debug"
+java_home='/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
+if [[ -n "${VIM_JAVA_HOME:-}" ]]; then
+  java_home="${VIM_JAVA_HOME}"
+elif [[ ! -x "${java_home}/bin/javac" && -x /usr/libexec/java_home ]]; then
+  java_home="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
+fi
+
+if [[ -x "${java_home}/bin/java" && -x "${java_home}/bin/javac" ]]; then
+  java_version="$("${java_home}/bin/javac" -version 2>&1)"
+  if [[ "${java_version}" == javac\ 17.* ]]; then
+    pass "coc-java tooling JDK: ${java_home} (${java_version})"
+  else
+    warn "coc-java requires Java 17; found ${java_version} at ${java_home}"
+  fi
+else
+  warn 'Java 17 JDK not found; set VIM_JAVA_HOME'
+fi
+
+case "$(uname -m)" in
+  arm64 | aarch64)
+    coc_java_arch='arm64'
+    ;;
+  *)
+    coc_java_arch='64'
+    ;;
+esac
+coc_java_link="${coc_config_root}/extensions/coc-java-data/jdk-17.0.8"
+coc_java_link+="/javajre-$(uname -s | tr '[:upper:]' '[:lower:]')"
+coc_java_link+="-${coc_java_arch}/jre"
+if [[ -L "${coc_java_link}" && "$(readlink "${coc_java_link}")" == "${java_home}" ]]; then
+  pass 'coc-java reuses the existing Java 17 without a private JDK copy'
+else
+  warn 'coc-java system-JDK link missing; run scripts/use-system-java.sh'
+fi
+
+downloaded_java_root="${coc_config_root}/extensions/coc-java-data"
+if find "${downloaded_java_root}" \
+  -maxdepth 1 \
+  -type d \
+  -name 'jdk-*-*-*' \
+  -print \
+  -quit 2>/dev/null | rg -q .; then
+  warn 'redundant coc-java private JDK found; it can be removed'
+else
+  pass 'no redundant coc-java private JDK copy'
+fi
+
 if find "${java_debug_root}/server" \
   -maxdepth 1 \
   -type f \

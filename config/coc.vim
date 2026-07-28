@@ -12,6 +12,64 @@ let g:coc_global_extensions = [
       \ '@yaegassy/coc-ruff',
       \ ]
 
+" Prefer the user's existing Java 17. VIM_JAVA_HOME keeps this portable,
+" while the explicit Zulu path matches the primary macOS workstation.
+function! s:IsJava17Home(java_home) abort
+  if !executable(a:java_home . '/bin/java')
+        \ || !executable(a:java_home . '/bin/javac')
+        \ || !filereadable(a:java_home . '/release')
+    return 0
+  endif
+
+  return match(
+        \ readfile(a:java_home . '/release', '', 10),
+        \ '^JAVA_VERSION="17\.') >= 0
+endfunction
+
+function! s:FindJava17Home() abort
+  let l:candidates = []
+  if exists('$VIM_JAVA_HOME') && !empty($VIM_JAVA_HOME)
+    call add(l:candidates, expand($VIM_JAVA_HOME))
+  endif
+  if has('macunix')
+    call add(
+          \ l:candidates,
+          \ '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home')
+  endif
+  if exists('$JAVA_HOME') && !empty($JAVA_HOME)
+    call add(l:candidates, expand($JAVA_HOME))
+  endif
+
+  for l:java_home in l:candidates
+    if s:IsJava17Home(l:java_home)
+      return resolve(l:java_home)
+    endif
+  endfor
+
+  if has('macunix') && executable('/usr/libexec/java_home')
+    let l:java_home = trim(system('/usr/libexec/java_home -v 17 2>/dev/null'))
+    if !v:shell_error && s:IsJava17Home(l:java_home)
+      return resolve(l:java_home)
+    endif
+  endif
+
+  return ''
+endfunction
+
+let g:vim_java_home = s:FindJava17Home()
+if !empty(g:vim_java_home)
+  let g:coc_user_config = get(g:, 'coc_user_config', {})
+  let g:coc_user_config['java.jdt.ls.java.home'] = g:vim_java_home
+  let g:coc_user_config['java.import.gradle.java.home'] = g:vim_java_home
+  let g:coc_user_config['java.configuration.runtimes'] = [
+        \ {
+        \   'name': 'JavaSE-17',
+        \   'path': g:vim_java_home,
+        \   'default': v:true,
+        \ },
+        \ ]
+endif
+
 function! s:CheckBackspace() abort
   let l:column = col('.') - 1
   return !l:column || getline('.')[l:column - 1] =~# '\s'
