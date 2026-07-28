@@ -51,6 +51,9 @@ if command -v vim >/dev/null 2>&1; then
 
   if vim --version | rg -q '\+python3'; then
     pass 'Vim has +python3 for Vimspector'
+  elif command -v mvim >/dev/null 2>&1 &&
+    mvim -v --version | rg -q '\+python3'; then
+    pass "MacVim terminal mode has +python3 for Vimspector: $(command -v mvim)"
   else
     warn 'Vim lacks +python3; Vimspector mappings will show a warning'
   fi

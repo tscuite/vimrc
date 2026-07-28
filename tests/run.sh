@@ -98,5 +98,11 @@ if [[ "${health_output}" == *'Abort trap'* ]]; then
   printf '%s\n' "${health_output}" >&2
   fail "health check leaked a crashing tool diagnostic"
 fi
+if ! vim --version | rg -q '\+python3' &&
+  command -v mvim >/dev/null 2>&1 &&
+  mvim -v --version | rg -q '\+python3'; then
+  [[ "${health_output}" == *'MacVim terminal mode has +python3 for Vimspector'* ]] ||
+    fail "health check must recognize mvim -v as the interactive Vim"
+fi
 
 printf 'PASS: Vim configuration assertions and static checks\n'

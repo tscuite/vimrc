@@ -10,7 +10,9 @@
 - Go、Python、Java、Rust 等工具链按实际项目安装
 - Rust 推荐使用 rustup，并安装 `rust-analyzer` 组件
 
-当前机器的 Vim 没有 `+python3`。这不影响 CoC 和普通编辑，但 Vimspector 暂时不可用；使用调试快捷键时只会显示提示。以后安装带 `+python3` 的 Vim 后无需修改快捷键。
+当前 zsh 已配置 `alias vim='mvim -v'`，日常执行 `vim` 时使用的是 Homebrew MacVim 的终端模式，包含 `+python3`，因此 Vimspector 可以加载。macOS 自带的 `/usr/bin/vim` 没有 `+python3`；绕过别名直接使用它时，调试快捷键只会显示提示。
+
+Vimspector 的调试适配器按具体语言和项目安装，首次使用时可运行 `:VimspectorInstall`，并在项目中配置 `.vimspector.json`。
 
 ## 安装
 
