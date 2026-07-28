@@ -6,6 +6,12 @@ call assert_equal(300, &updatetime, 'CoC requires a short updatetime')
 call assert_equal(500, &timeoutlen, 'Leader mappings need a predictable timeout')
 call assert_true(&hidden, 'Hidden buffers must be enabled')
 call assert_true(&signcolumn ==# 'yes', 'Sign column must not move the text')
+call assert_false(&termguicolors, 'Keep the original terminal-controlled colors')
+call assert_equal('light', &background, 'Keep the original background mode')
+call assert_equal(
+      \ 'default',
+      \ get(g:, 'colors_name', 'default'),
+      \ 'Keep the original Vim color scheme')
 
 for s:key in ['\p', '\f', '\b', '\h', '\e', '\c',
       \ '\gs', '\gd', '\gb', '\gp',

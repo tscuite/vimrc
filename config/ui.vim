@@ -1,13 +1,9 @@
 if exists('+termguicolors')
-  set termguicolors
+  set notermguicolors
 endif
 
-set background=dark
-try
-  colorscheme monokai_pro
-catch /^Vim\%((\a\+)\)\=:E185/
-  silent! colorscheme habamax
-endtry
+set background=light
+silent! colorscheme default
 
 function! VimConfigCocStatus() abort
   try
