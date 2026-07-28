@@ -12,7 +12,6 @@
 /tmp/
 
 /coc-data/
-/.vimspector.log
 *.log
 **/doc/tags
 

@@ -6,16 +6,13 @@
 
 - Vim 9.0.0438 或更新版本，并包含 `+job`、`+channel`
 - Node.js 20 或更新版本
-- Git、curl、ripgrep、Python 3、Go
+- Git、curl、ripgrep
 - Go、Python、Java、Rust 等工具链由用户自行安装
 - Java 项目使用已有的 Zulu 17；`coc-java` 的 JDT.LS 使用已有的 Zulu 21
 - Rust 推荐使用 rustup，并安装 `rust-analyzer` 组件
 
-当前 zsh 已配置 `alias vim='mvim -v'`，日常执行 `vim` 时使用的是 Homebrew MacVim 的终端模式，包含 `+python3`，因此 Vimspector 可以加载。macOS 自带的 `/usr/bin/vim` 没有 `+python3`；绕过别名直接使用它时，调试快捷键只会显示提示。
-
 `bootstrap.sh` 只安装 Java、Python、JavaScript/TypeScript、Go 和 Rust
-的编辑器插件及调试适配器，不安装或替换系统语言运行时。Markdown 与
-Dockerfile 不需要源码调试器。
+的编辑器插件和语言服务，不安装或替换系统语言运行时，也不安装调试器。
 
 ## 安装
 
@@ -26,7 +23,7 @@ bash ~/.vim/scripts/bootstrap.sh
 bash ~/.vim/scripts/health-check.sh
 ```
 
-macOS 优先使用 Homebrew Python 安装调试适配器，避免系统旧 Python 的证书和架构问题。需要指定其他解释器时，可设置 `VIMSPECTOR_PYTHON`。
+### Java 路径配置
 
 Java 项目和 Gradle 默认使用：
 
@@ -40,7 +37,36 @@ Java 项目和 Gradle 默认使用：
 /Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
 ```
 
-这两个路径都只复用现有 JDK。需要换路径时：
+这两个路径都只复用现有 JDK，不会安装 Java。仓库内的默认路径设置在：
+
+- `config/coc.vim`
+  - `g:vim_java_home`：项目、Gradle 和默认 `JavaSE-17` 运行时
+  - `g:vim_java_tooling_home`：CoC 的 JDT.LS 语言服务
+- `scripts/use-system-java.sh`
+  - 为当前版本的 `coc-java` 创建兼容链接时使用相同的默认路径
+
+`coc-settings.json` 中没有写死 Java 的绝对路径。通常不需要直接修改上述
+两个文件，建议在 `~/.zshrc` 中覆盖：
+
+```zsh
+export VIM_JAVA_HOME=/path/to/jdk-17
+export VIM_JAVA_TOOLING_HOME=/path/to/jdk-21
+```
+
+让当前终端立即读取新配置，然后更新 `coc-java` 的兼容链接：
+
+```bash
+source ~/.zshrc
+bash ~/.vim/scripts/use-system-java.sh
+```
+
+最后重启 Vim，或者在 Vim 中执行：
+
+```vim
+:CocRestart
+```
+
+临时指定路径并执行完整初始化也可以：
 
 ```bash
 VIM_JAVA_HOME=/path/to/jdk-17 \
@@ -48,7 +74,7 @@ VIM_JAVA_TOOLING_HOME=/path/to/jdk-21 \
   bash ~/.vim/scripts/bootstrap.sh
 ```
 
-安装脚本会给 `coc-java` 创建一个指向现有 JDK 21 的兼容链接；该链接不
+初始化脚本会给 `coc-java` 创建一个指向现有 JDK 21 的兼容链接；该链接不
 复制 JDK，也不会修改 `/Library/Java`。项目的 Java 版本仍为 17。
 
 `bootstrap.sh` 只从官方 GitHub 下载 Vim-Plug 和声明的插件。旧镜像配置仍保留在 `config/plugins.vim` 中，但已注释：
@@ -101,40 +127,22 @@ Leader 是反斜杠 `\`。
 | `\q` | 安全关闭 |
 | `\x` | 保存并关闭 |
 | `[b` / `]b` | 上一个/下一个缓冲区 |
+| `Ctrl-W v` | 竖向拆分窗口 |
+| `Ctrl-W s` | 横向拆分窗口 |
 | `Ctrl-W h/j/k/l` | Vim 原生窗口导航 |
 
-### 调试
+### 分屏跳转
 
-| 快捷键 | 功能 |
-| --- | --- |
-| `\dd` | 启动或继续 |
-| `\db` | 切换断点 |
-| `\dn` | 单步跳过 |
-| `\di` | 单步进入 |
-| `\do` | 单步跳出 |
-| `\ds` | 停止 |
+先按 `Ctrl-W v`（竖向）或 `Ctrl-W s`（横向）拆分窗口，再按 `gd` 跳到
+定义。返回原窗口可按 `Ctrl-W p`，也可以使用 `Ctrl-W h/j/k/l` 移动。
 
-没有配置 F2、F5、F9、F10、F11、F12 等功能键。
+`main` 分支只保留 CoC/LSP 的代码跳转、补全和诊断，不包含运行或调试
+功能。完整调试方案保留在 `debug` 分支；需要时执行：
 
-在 Java 文件中，`\dd` 会走 `coc-java-debug`：CoC 解析当前主类、Gradle
-classpath 和项目名，再连接 Vimspector。Java 的启动配置已经全局定义，
-不会向业务仓库生成 `.vimspector.json`。若 Java 服务仍在导入项目，启动
-请求会自动等待，`\ds` 可取消等待。安装或更新 `coc-java-debug` 后，需要
-重启 Vim，或执行 `:CocRestart`。
-
-其余语言已安装的适配器如下：
-
-| 语言 | 适配器 |
-| --- | --- |
-| Python | `debugpy` |
-| JavaScript / TypeScript / Vue | `vscode-js-debug` |
-| Go | `delve` |
-| Rust | `CodeLLDB` |
-
-适配器负责“怎么调试”，项目的 `.vimspector.json` 负责“启动哪个程序及
-参数”。Java 已有不落盘的全局启动配置；其他语言仍可按项目添加启动配置。
-
-以后更新已安装的适配器可执行 `:VimspectorUpdate`。
+```bash
+git -C ~/.vim switch debug
+bash ~/.vim/scripts/bootstrap.sh
+```
 
 ## CoC
 
@@ -190,7 +198,7 @@ git -C ~/.vim status
 
 `~/.vim/.git` 只管理本目录配置。oh-my-zsh 的 Git 插件只是提供 Shell 别名和提示符，两者不冲突。进入 `~/.vim` 后提示符显示分支和修改状态是正常现象。
 
-插件目录、CoC 缓存、调试适配器、undo 和历史文件都被 `.gitignore` 排除。
+插件目录、CoC 缓存、undo 和历史文件都被 `.gitignore` 排除。
 
 ## 回滚
 

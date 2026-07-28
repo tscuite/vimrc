@@ -20,7 +20,5 @@ silent! let g:plugs['vim-repeat'].commit = '65846025c15494983dafe5e3b46c8f88ab2e
 silent! let g:plugs['vim-sleuth'].commit = 'be69bff86754b1aa5adcbb527d7fcd1635a84080'
 silent! let g:plugs['vim-surround'].commit = '3d188ed2113431cf8dac77be61b842acb64433d9'
 silent! let g:plugs['vim-templates'].commit = 'c4ce1903fc458688bc421f0cb4572af8a8977cdb'
-silent! let g:plugs['vimspector'].commit = '34099d18d8957bb3db5f396c8ca993ffb246a437'
 
 PlugUpdate!
-

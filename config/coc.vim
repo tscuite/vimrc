@@ -4,7 +4,6 @@ let g:coc_global_extensions = [
       \ 'coc-tsserver',
       \ '@yaegassy/coc-volar',
       \ 'coc-java',
-      \ 'coc-java-debug',
       \ 'coc-rust-analyzer',
       \ 'coc-json',
       \ 'coc-eslint',

@@ -2,37 +2,6 @@
 " let g:plug_url_format = 'https://bgithub.xyz/%s'
 
 let g:copilot_no_tab_map = 1
-let g:vimspector_enable_mappings = ''
-let g:vimspector_install_gadgets = [
-      \ 'debugpy',
-      \ 'delve',
-      \ 'vscode-js-debug',
-      \ 'CodeLLDB',
-      \ ]
-let g:vimspector_adapters = {
-      \ 'coc-java-debug': {
-      \   'port': '${AdapterPort}',
-      \ },
-      \ }
-let g:vimspector_configurations = {
-      \ 'launch': {
-      \   'adapter': 'coc-java-debug',
-      \   'filetypes': ['java'],
-      \   'configuration': {
-      \     'args': '${args}',
-      \     'request': 'launch',
-      \     'projectName': '${ProjectName}',
-      \     'mainClass': '${MainClass}',
-      \     'classPaths': ['*${ClassPaths}'],
-      \   },
-      \   'breakpoints': {
-      \     'exception': {
-      \       'caught': 'N',
-      \       'uncaught': 'N',
-      \     },
-      \   },
-      \ },
-      \ }
 
 let g:go_gopls_enabled = 0
 let g:go_code_completion_enabled = 0
@@ -87,8 +56,6 @@ Plug 'preservim/vim-markdown', { 'for': 'markdown' }
 Plug 'godlygeek/tabular', { 'for': 'markdown' }
 Plug 'tibabit/vim-templates'
 Plug 'fatih/vim-go', { 'for': 'go' }
-
-Plug 'puremourning/vimspector', { 'on': [] }
 
 call plug#end()
 

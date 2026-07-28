@@ -49,14 +49,6 @@ if command -v vim >/dev/null 2>&1; then
     fail 'Vim 9.0.0438+ with +job and +channel is required'
   fi
 
-  if vim --version | rg -q '\+python3'; then
-    pass 'Vim has +python3 for Vimspector'
-  elif command -v mvim >/dev/null 2>&1 &&
-    mvim -v --version | rg -q '\+python3'; then
-    pass "MacVim terminal mode has +python3 for Vimspector: $(command -v mvim)"
-  else
-    warn 'Vim lacks +python3; Vimspector mappings will show a warning'
-  fi
 fi
 
 if command -v node >/dev/null 2>&1; then
@@ -74,7 +66,6 @@ for config_file in \
   config/plugins.vim \
   config/coc.vim \
   config/mappings.vim \
-  autoload/vimconfig/debug.vim \
   coc-settings.json; do
   if [[ -r "${vim_root}/${config_file}" ]]; then
     pass "config present: ${config_file}"
@@ -111,7 +102,6 @@ else
 fi
 
 coc_config_root="${XDG_CONFIG_HOME:-${HOME:-}/.config}/coc"
-java_debug_root="${coc_config_root}/extensions/node_modules/coc-java-debug"
 project_java_home='/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
 if [[ -n "${VIM_JAVA_HOME:-}" ]]; then
   project_java_home="${VIM_JAVA_HOME}"
@@ -180,30 +170,6 @@ if find "${downloaded_java_root}" \
   warn 'redundant coc-java private JDK found; it can be removed'
 else
   pass 'no redundant coc-java private JDK copy'
-fi
-
-if find "${java_debug_root}/server" \
-  -maxdepth 1 \
-  -type f \
-  -name 'com.microsoft.java.debug.plugin-*.jar' \
-  -print \
-  -quit 2>/dev/null | rg -q .; then
-  pass 'Java debug adapter installed through coc-java-debug'
-else
-  warn 'Java debug adapter missing; run :CocInstall coc-java-debug'
-fi
-
-gadget_manifest="${vim_root}/plugged/vimspector/gadgets/macos/.gadgets.json"
-if [[ -r "${gadget_manifest}" ]]; then
-  for adapter in debugpy delve js-debug CodeLLDB; do
-    if rg -Fq "\"${adapter}\"" "${gadget_manifest}"; then
-      pass "Vimspector adapter installed: ${adapter}"
-    else
-      warn "Vimspector adapter missing: ${adapter}"
-    fi
-  done
-else
-  warn 'Vimspector adapters are not installed; run scripts/bootstrap.sh'
 fi
 
 for optional_command in go python3 java cargo; do

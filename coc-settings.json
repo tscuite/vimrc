@@ -8,7 +8,5 @@
   "prettier.disableSuccessMessage": true,
   "python.analysis.typeCheckingMode": "basic",
   "java.jdt.ls.javac.enabled": "off",
-  "java.debug.vimspector.config.createIfNotExists": false,
-  "java.debug.settings.stepping.skipClasses": ["$JDK"],
   "rust-analyzer.server.path": "~/.vim/scripts/rust-analyzer-wrapper.sh"
 }

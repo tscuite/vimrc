@@ -28,7 +28,6 @@ call assert_equal(
 for s:key in ['\p', '\f', '\b', '\h', '\e', '\c',
       \ '\gs', '\gd', '\gb', '\gp',
       \ '\w', '\q', '\x',
-      \ '\dd', '\db', '\dn', '\di', '\do', '\ds',
       \ 'gd', 'gr', 'gi', 'K', '[g', ']g',
       \ '\a', '\r', '\=', '\l', '\o',
       \ '[b', ']b']
@@ -39,6 +38,12 @@ for s:key in ['<Tab>', '<S-Tab>', '<CR>', '<C-K>', '<C-J>']
   call assert_false(
         \ empty(maparg(s:key, 'i')),
         \ 'Missing insert mapping: ' . s:key)
+endfor
+
+for s:key in ['\dd', '\db', '\dn', '\di', '\do', '\ds']
+  call assert_true(
+        \ empty(maparg(s:key, 'n')),
+        \ 'Unexpected debug mapping: ' . s:key)
 endfor
 
 for s:key in ["\<F2>", "\<F5>", "\<F9>", "\<F10>", "\<F11>", "\<F12>",
@@ -54,7 +59,6 @@ if exists('g:coc_global_extensions')
         \ 'coc-tsserver',
         \ '@yaegassy/coc-volar',
         \ 'coc-java',
-        \ 'coc-java-debug',
         \ 'coc-rust-analyzer',
         \ 'coc-json',
         \ 'coc-eslint',
@@ -65,28 +69,20 @@ if exists('g:coc_global_extensions')
           \ index(g:coc_global_extensions, s:extension) >= 0,
           \ 'Missing CoC extension: ' . s:extension)
   endfor
+  call assert_true(
+        \ index(g:coc_global_extensions, 'coc-java-debug') < 0,
+        \ 'coc-java-debug must remain disabled on main')
 endif
 call assert_false(exists('g:plug_url_format'), 'Plugin mirror must remain disabled')
-call assert_equal(
-      \ ['debugpy', 'delve', 'vscode-js-debug', 'CodeLLDB'],
-      \ get(g:, 'vimspector_install_gadgets', []),
-      \ 'Vimspector adapters must be reproducible')
-call assert_equal(
-      \ '${AdapterPort}',
-      \ get(
-      \   get(get(g:, 'vimspector_adapters', {}), 'coc-java-debug', {}),
-      \   'port',
-      \   ''),
-      \ 'Global coc-java-debug adapter must be configured')
-let s:java_launch = get(get(g:, 'vimspector_configurations', {}), 'launch', {})
-call assert_equal(
-      \ 'coc-java-debug',
-      \ get(s:java_launch, 'adapter', ''),
-      \ 'Global Java launch configuration must use coc-java-debug')
-call assert_equal(
-      \ ['java'],
-      \ get(s:java_launch, 'filetypes', []),
-      \ 'Global Java launch configuration must be Java-only')
+call assert_false(
+      \ exists('g:vimspector_install_gadgets'),
+      \ 'Vimspector must remain disabled on main')
+call assert_false(
+      \ exists('g:vimspector_adapters'),
+      \ 'Vimspector adapters must remain disabled on main')
+call assert_false(
+      \ exists('g:vimspector_configurations'),
+      \ 'Vimspector launch configurations must remain disabled on main')
 
 let s:zulu_17 = '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
 let s:zulu_21 = '/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home'
@@ -118,17 +114,6 @@ function! s:AssertIndent(filetype, width, uses_spaces) abort
   call assert_equal(a:width, &l:shiftwidth, a:filetype . ' shiftwidth')
   call assert_equal(a:width, &l:tabstop, a:filetype . ' tabstop')
   call assert_equal(a:uses_spaces, &l:expandtab, a:filetype . ' expandtab')
-  if a:filetype ==# 'java'
-    let l:debug_mapping = maparg('\dd', 'n', 0, 1)
-    call assert_equal(
-          \ 1,
-          \ get(l:debug_mapping, 'buffer', 0),
-          \ 'Java debug launcher must be buffer-local')
-    call assert_match(
-          \ 'vimconfig#debug#java',
-          \ get(l:debug_mapping, 'rhs', ''),
-          \ 'Java \dd must use the coc-java debugger bridge')
-  endif
   bwipeout!
 endfunction
 

@@ -18,8 +18,8 @@ fail() {
   fail "missing scripts/rust-analyzer-wrapper.sh"
 [[ -f "${vim_root}/scripts/use-system-java.sh" ]] ||
   fail "missing scripts/use-system-java.sh"
-[[ -f "${vim_root}/autoload/vimconfig/debug.vim" ]] ||
-  fail "missing autoload/vimconfig/debug.vim"
+[[ ! -e "${vim_root}/autoload/vimconfig/debug.vim" ]] ||
+  fail "debug autoload file must not exist on main"
 [[ -f "${vim_root}/README.md" ]] || fail "missing README.md"
 [[ -f "${vim_root}/.gitignore" ]] || fail "missing .gitignore"
 
@@ -75,8 +75,9 @@ rg -Fq '/plugged/' "${vim_root}/.gitignore" ||
   fail ".gitignore must ignore downloaded plugins"
 rg -Fq '/docs/' "${vim_root}/.gitignore" ||
   fail ".gitignore must keep planning documents out of the repository"
-rg -Fq '\dd' "${vim_root}/README.md" ||
-  fail "README must document debug mappings"
+if rg -n -F '\dd' "${vim_root}/README.md"; then
+  fail "README must not document debug mappings on main"
+fi
 rg -Fq 'coc-go-data/bin/gopls' "${vim_root}/scripts/health-check.sh" ||
   fail "health check must recognize CoC-managed gopls"
 
@@ -95,25 +96,28 @@ node -e '
   if (config["java.jdt.ls.javac.enabled"] !== "off") {
     process.exit(1);
   }
-  if (config["java.debug.vimspector.config.createIfNotExists"] !== false) {
+  if (Object.keys(config).some((key) => key.startsWith("java.debug."))) {
     process.exit(1);
   }
 ' "${vim_root}/coc-settings.json"
 
-rg -Fq 'coc-java-debug' "${vim_root}/scripts/bootstrap.sh" ||
-  fail "bootstrap must install coc-java-debug"
 rg -Fq 'scripts/use-system-java.sh' "${vim_root}/scripts/bootstrap.sh" ||
   fail "bootstrap must configure coc-java to use the existing JDK"
-rg -Fq 'Command: .* not found' "${vim_root}/autoload/vimconfig/debug.vim" ||
-  fail "Java debug startup must retry while CoC commands are registering"
-rg -Fq -- '--enable-python' "${vim_root}/scripts/bootstrap.sh" ||
-  fail "bootstrap must install the Python debug adapter"
-rg -Fq -- '--enable-go' "${vim_root}/scripts/bootstrap.sh" ||
-  fail "bootstrap must install the Go debug adapter"
-rg -Fq -- '--enable-rust' "${vim_root}/scripts/bootstrap.sh" ||
-  fail "bootstrap must install the Rust debug adapter"
-rg -Fq -- '--force-enable-node' "${vim_root}/scripts/bootstrap.sh" ||
-  fail "bootstrap must install the JavaScript debug adapter"
+
+for runtime_file in \
+  config/plugins.vim \
+  config/mappings.vim \
+  config/coc.vim \
+  coc-settings.json \
+  scripts/bootstrap.sh \
+  scripts/health-check.sh \
+  snapshot.vim; do
+  if rg -n -i \
+    'vimspector|coc-java-debug|debugpy|vscode-js-debug|codelldb' \
+    "${vim_root}/${runtime_file}"; then
+    fail "debug integration remains in ${runtime_file}"
+  fi
+done
 
 if ! health_output="$("${vim_root}/scripts/health-check.sh" 2>&1)"; then
   printf '%s\n' "${health_output}" >&2
@@ -122,12 +126,6 @@ fi
 if [[ "${health_output}" == *'Abort trap'* ]]; then
   printf '%s\n' "${health_output}" >&2
   fail "health check leaked a crashing tool diagnostic"
-fi
-if ! vim --version | rg -q '\+python3' &&
-  command -v mvim >/dev/null 2>&1 &&
-  mvim -v --version | rg -q '\+python3'; then
-  [[ "${health_output}" == *'MacVim terminal mode has +python3 for Vimspector'* ]] ||
-    fail "health check must recognize mvim -v as the interactive Vim"
 fi
 
 printf 'PASS: Vim configuration assertions and static checks\n'

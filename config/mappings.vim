@@ -31,10 +31,3 @@ nnoremap <silent> <leader>x :xit<CR>
 
 nnoremap <silent> [b :bprevious<CR>
 nnoremap <silent> ]b :bnext<CR>
-
-nnoremap <silent> <leader>dd :call vimconfig#debug#run('continue')<CR>
-nnoremap <silent> <leader>db :call vimconfig#debug#run('breakpoint')<CR>
-nnoremap <silent> <leader>dn :call vimconfig#debug#run('step-over')<CR>
-nnoremap <silent> <leader>di :call vimconfig#debug#run('step-in')<CR>
-nnoremap <silent> <leader>do :call vimconfig#debug#run('step-out')<CR>
-nnoremap <silent> <leader>ds :call vimconfig#debug#run('stop')<CR>
