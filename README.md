@@ -90,7 +90,7 @@ Leader 是反斜杠 `\`。
 
 没有配置 F2、F5、F9、F10、F11、F12 等功能键。
 
-在 Java 文件中，`\dd` 会走 `coc-java-debug`：CoC 解析当前主类、Gradle classpath 和项目名，再连接 Vimspector。首次使用会在 CoC 工作区根目录生成 `.vimspector.json`；若 Java 服务仍在导入项目，请等 CoC 就绪后再按一次。安装或更新 `coc-java-debug` 后，需要重启 Vim，或执行 `:CocRestart`。
+在 Java 文件中，`\dd` 会走 `coc-java-debug`：CoC 解析当前主类、Gradle classpath 和项目名，再连接 Vimspector。首次使用会在 CoC 工作区根目录生成 `.vimspector.json`。若 Java 服务仍在导入项目，启动请求会自动等待，`\ds` 可取消等待。安装或更新 `coc-java-debug` 后，需要重启 Vim，或执行 `:CocRestart`。
 
 其余语言已安装的适配器如下：
 
