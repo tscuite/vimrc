@@ -3,6 +3,7 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 vim_root="$(cd "${script_dir}/.." && pwd)"
+vimrc_link="${HOME}/.vimrc"
 
 info() {
   printf '==> %s\n' "$1"
@@ -17,6 +18,16 @@ for required_command in vim git curl node; do
   command -v "${required_command}" >/dev/null 2>&1 ||
     die "missing required command: ${required_command}"
 done
+
+if [[ "${vim_root}" == "${HOME}/.vim" ]]; then
+  if [[ ! -e "${vimrc_link}" && ! -L "${vimrc_link}" ]]; then
+    info "Linking ~/.vimrc to ~/.vim/vimrc"
+    ln -s "${vim_root}/vimrc" "${vimrc_link}"
+  elif [[ ! -L "${vimrc_link}" ||
+    "$(readlink "${vimrc_link}")" != "${vim_root}/vimrc" ]]; then
+    die "${vimrc_link} already exists and is not managed by this repository"
+  fi
+fi
 
 node_major="$(node -p 'Number(process.versions.node.split(".")[0])')"
 ((node_major >= 20)) || die "Node.js 20 or newer is required"
@@ -51,6 +62,7 @@ install -m 0644 "${plug_tmp}" "${plug_path}"
 
 info "Installing Vim plugins"
 vim \
+  --cmd 'let g:enable_ide = 1' \
   -Nu "${vim_root}/vimrc" \
   -i NONE \
   -n \
@@ -73,6 +85,7 @@ coc_extensions=(
 
 info "Installing CoC extensions"
 vim \
+  --cmd 'let g:enable_ide = 1' \
   -Nu "${vim_root}/vimrc" \
   -i NONE \
   -n \
@@ -85,6 +98,7 @@ info "Configuring coc-java to reuse the existing Java 17 and Java 21"
 
 info "Writing plugin snapshot"
 vim \
+  --cmd 'let g:enable_ide = 1' \
   -Nu "${vim_root}/vimrc" \
   -i NONE \
   -n \

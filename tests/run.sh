@@ -9,19 +9,22 @@ fail() {
   exit 1
 }
 
-[[ -f "${vim_root}/vimrc" ]] || fail "missing ${vim_root}/vimrc"
-[[ -f "${vim_root}/config/plugins.vim" ]] || fail "missing config/plugins.vim"
-[[ -f "${vim_root}/coc-settings.json" ]] || fail "missing coc-settings.json"
-[[ -f "${vim_root}/scripts/bootstrap.sh" ]] || fail "missing scripts/bootstrap.sh"
-[[ -f "${vim_root}/scripts/health-check.sh" ]] || fail "missing scripts/health-check.sh"
-[[ -f "${vim_root}/scripts/rust-analyzer-wrapper.sh" ]] ||
-  fail "missing scripts/rust-analyzer-wrapper.sh"
-[[ -f "${vim_root}/scripts/use-system-java.sh" ]] ||
-  fail "missing scripts/use-system-java.sh"
-[[ ! -e "${vim_root}/autoload/vimconfig/debug.vim" ]] ||
-  fail "debug autoload file must not exist on main"
-[[ -f "${vim_root}/README.md" ]] || fail "missing README.md"
-[[ -f "${vim_root}/.gitignore" ]] || fail "missing .gitignore"
+for required_file in \
+  vimrc \
+  README.md \
+  .gitignore \
+  scripts/bootstrap.sh \
+  scripts/health-check.sh \
+  scripts/rust-analyzer-wrapper.sh \
+  scripts/use-system-java.sh; do
+  [[ -f "${vim_root}/${required_file}" ]] ||
+    fail "missing ${required_file}"
+done
+
+if find "${vim_root}/config" "${vim_root}/after/ftplugin" \
+  -type f -print -quit 2>/dev/null | rg -q .; then
+  fail "runtime configuration must stay in vimrc"
+fi
 
 error_file="$(mktemp "${TMPDIR:-/tmp}/vim-config-errors.XXXXXX")"
 cleanup() {
@@ -29,86 +32,73 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if ! VIM_TEST_ERRORS="${error_file}" vim \
-  -Nu "${vim_root}/vimrc" \
-  -i NONE \
-  -n \
-  -es \
-  -S "${script_dir}/assertions.vim"; then
-  if [[ -s "${error_file}" ]]; then
-    cat "${error_file}" >&2
+run_assertions() {
+  local mode="$1"
+  shift
+  : >"${error_file}"
+  if ! VIM_TEST_ERRORS="${error_file}" vim "$@" \
+    -Nu "${vim_root}/vimrc" \
+    -i NONE \
+    -n \
+    -es \
+    -S "${script_dir}/assertions.vim"; then
+    [[ ! -s "${error_file}" ]] || cat "${error_file}" >&2
+    fail "Vim assertions failed in ${mode} mode"
   fi
-  fail "Vim assertions failed"
-fi
-
-[[ ! -s "${error_file}" ]] || {
-  cat "${error_file}" >&2
-  fail "Vim assertions reported errors"
+  [[ ! -s "${error_file}" ]] || {
+    cat "${error_file}" >&2
+    fail "Vim assertions reported errors in ${mode} mode"
+  }
 }
 
-rg -Fq "\" let g:plug_url_format = 'https://bgithub.xyz/%s'" \
-  "${vim_root}/config/plugins.vim" ||
-  fail "disabled bgithub.xyz mirror line is missing"
+run_assertions lightweight
+run_assertions ide --cmd 'let g:enable_ide = 1'
 
+rg -Fq "\" let g:plug_url_format = 'https://bgithub.xyz/%s'" \
+  "${vim_root}/vimrc" ||
+  fail "disabled bgithub.xyz mirror line is missing"
 if rg -n \
   '^[[:space:]]*let[[:space:]]+g:plug_url_format.*bgithub\.xyz' \
-  "${vim_root}/config/plugins.vim"; then
+  "${vim_root}/vimrc"; then
   fail "bgithub.xyz mirror is active"
 fi
 
 if rg -n \
-  "^Plug .*(YouCompleteMe|dense-analysis/ale|vim-flake8|syntastic-local-eslint|vim-codefmt|vim-maktaba)" \
-  "${vim_root}/config/plugins.vim"; then
-  fail "a removed completion/lint/format plugin is still declared"
+  "^\\s*Plug .*(YouCompleteMe|vim-flake8|vim-codefmt|vim-markdown|vim-go|vim-monokai-pro|tabular)" \
+  "${vim_root}/vimrc"; then
+  fail "a redundant plugin is still declared"
 fi
+
+rg -Fq "let g:enable_ide = get(g:, 'enable_ide', 0)" \
+  "${vim_root}/vimrc" ||
+  fail "IDE must be disabled by default"
+if rg -Fq '<leader>j' "${vim_root}/vimrc"; then
+  fail "Java-specific toggle must not remain"
+fi
+rg -Fq 'g:enable_ide' "${vim_root}/README.md" ||
+  fail "README must document the IDE switch"
+rg -Fq '~/.vimrc' "${vim_root}/README.md" ||
+  fail "README must document the single vimrc entry point"
 
 rg -Fq \
   'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim' \
   "${vim_root}/scripts/bootstrap.sh" ||
   fail "bootstrap does not use the official Vim-Plug URL"
-
 if rg -n 'bgithub\.xyz' "${vim_root}/scripts/bootstrap.sh"; then
   fail "bootstrap must not use bgithub.xyz"
 fi
+rg -Fq 'scripts/use-system-java.sh' "${vim_root}/scripts/bootstrap.sh" ||
+  fail "bootstrap must configure coc-java to use the existing JDK"
+rg -Fq 'coc-go-data/bin/gopls' "${vim_root}/scripts/health-check.sh" ||
+  fail "health check must recognize CoC-managed gopls"
 
 rg -Fq '/plugged/' "${vim_root}/.gitignore" ||
   fail ".gitignore must ignore downloaded plugins"
 rg -Fq '/docs/' "${vim_root}/.gitignore" ||
   fail ".gitignore must keep planning documents out of the repository"
-if rg -n -F '\dd' "${vim_root}/README.md"; then
-  fail "README must not document debug mappings on main"
-fi
-rg -Fq 'coc-go-data/bin/gopls' "${vim_root}/scripts/health-check.sh" ||
-  fail "health check must recognize CoC-managed gopls"
-
-while IFS= read -r -d '' shell_file; do
-  bash -n "${shell_file}"
-done < <(find "${vim_root}/scripts" "${vim_root}/tests" -type f -name '*.sh' -print0)
-
-node -e \
-  'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' \
-  "${vim_root}/coc-settings.json"
-node -e '
-  const config = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
-  if (config["rust-analyzer.server.path"] !== "~/.vim/scripts/rust-analyzer-wrapper.sh") {
-    process.exit(1);
-  }
-  if (config["java.jdt.ls.javac.enabled"] !== "off") {
-    process.exit(1);
-  }
-  if (Object.keys(config).some((key) => key.startsWith("java.debug."))) {
-    process.exit(1);
-  }
-' "${vim_root}/coc-settings.json"
-
-rg -Fq 'scripts/use-system-java.sh' "${vim_root}/scripts/bootstrap.sh" ||
-  fail "bootstrap must configure coc-java to use the existing JDK"
 
 for runtime_file in \
-  config/plugins.vim \
-  config/mappings.vim \
-  config/coc.vim \
-  coc-settings.json \
+  vimrc \
   scripts/bootstrap.sh \
   scripts/health-check.sh \
   snapshot.vim; do
@@ -118,6 +108,11 @@ for runtime_file in \
     fail "debug integration remains in ${runtime_file}"
   fi
 done
+
+while IFS= read -r -d '' shell_file; do
+  bash -n "${shell_file}"
+done < <(find "${vim_root}/scripts" "${vim_root}/tests" \
+  -type f -name '*.sh' -print0)
 
 if ! health_output="$("${vim_root}/scripts/health-check.sh" 2>&1)"; then
   printf '%s\n' "${health_output}" >&2

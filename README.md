@@ -1,6 +1,7 @@
 # Vim 配置
 
-这是一个面向 macOS 终端 Vim 9 的模块化配置。CoC 统一负责补全、LSP、诊断、跳转和格式化；GitHub Copilot 只负责 AI 建议。
+这是一个面向 macOS Vim 9 的单文件配置。插件、选项、快捷键和 CoC 设置
+都集中在 `~/.vimrc`；GitHub Copilot 只负责 AI 建议。
 
 ## 环境要求
 
@@ -16,7 +17,8 @@
 
 ## 安装
 
-配置入口是 `~/.vim/vimrc`，不要同时保留 `~/.vimrc`。
+仓库中的 `~/.vim/vimrc` 由 `~/.vimrc` 软链接加载。首次执行初始化脚本会
+自动创建该链接：
 
 ```bash
 bash ~/.vim/scripts/bootstrap.sh
@@ -37,16 +39,8 @@ Java 项目和 Gradle 默认使用：
 /Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
 ```
 
-这两个路径都只复用现有 JDK，不会安装 Java。仓库内的默认路径设置在：
-
-- `config/coc.vim`
-  - `g:vim_java_home`：项目、Gradle 和默认 `JavaSE-17` 运行时
-  - `g:vim_java_tooling_home`：CoC 的 JDT.LS 语言服务
-- `scripts/use-system-java.sh`
-  - 为当前版本的 `coc-java` 创建兼容链接时使用相同的默认路径
-
-`coc-settings.json` 中没有写死 Java 的绝对路径。通常不需要直接修改上述
-两个文件，建议在 `~/.zshrc` 中覆盖：
+这两个路径都只复用现有 JDK，不会安装 Java。默认值位于 `~/.vimrc` 的
+`g:vim_java_home` 和 `g:vim_java_tooling_home`；建议在 `~/.zshrc` 中覆盖：
 
 ```zsh
 export VIM_JAVA_HOME=/path/to/jdk-17
@@ -77,11 +71,24 @@ VIM_JAVA_TOOLING_HOME=/path/to/jdk-21 \
 初始化脚本会给 `coc-java` 创建一个指向现有 JDK 21 的兼容链接；该链接不
 复制 JDK，也不会修改 `/Library/Java`。项目的 Java 版本仍为 17。
 
-`bootstrap.sh` 只从官方 GitHub 下载 Vim-Plug 和声明的插件。旧镜像配置仍保留在 `config/plugins.vim` 中，但已注释：
+`bootstrap.sh` 只从官方 GitHub 下载 Vim-Plug 和声明的插件。旧镜像配置
+仍保留在 `~/.vimrc` 中，但已注释：
 
 ```vim
 " let g:plug_url_format = 'https://bgithub.xyz/%s'
 ```
+
+## 总开关
+
+`~/.vimrc` 第一行附近只有一个 IDE 开关：
+
+```vim
+let g:enable_ide = get(g:, 'enable_ide', 0)
+```
+
+- `0`：轻量模式，只加载基础编辑、搜索、文件树和 Git，不加载 CoC 或
+  Copilot，也不会启动 Node、JDT.LS、Gradle 等语言服务。
+- `1`：启用 CoC、Copilot、补全、诊断和代码跳转；修改后重启 Vim 生效。
 
 ## 快捷键
 
@@ -99,6 +106,8 @@ Leader 是反斜杠 `\`。
 | `\c` | 命令列表 |
 
 ### CoC
+
+以下快捷键仅在 `g:enable_ide = 1` 时启用。
 
 | 快捷键 | 功能 |
 | --- | --- |
