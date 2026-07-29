@@ -65,12 +65,7 @@ let g:fzf_layout = {'down': '40%'}
 filetype plugin indent on
 syntax enable
 
-" 配色
-if exists('+termguicolors')
-  set notermguicolors
-endif
-set background=light
-silent! colorscheme default
+" 配色沿用终端
 highlight SignColumn ctermbg=NONE guibg=NONE
 highlight FoldColumn ctermbg=NONE guibg=NONE
 
