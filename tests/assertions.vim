@@ -110,6 +110,17 @@ call assert_true(&l:wrap, 'Markdown must wrap')
 call assert_true(&l:linebreak, 'Markdown must use linebreak')
 bwipeout!
 
+let s:reload_file = tempname()
+call writefile(['before'], s:reload_file)
+execute 'edit ' . fnameescape(s:reload_file)
+setlocal noundofile
+sleep 1100m
+call writefile(['changed by AI'], s:reload_file)
+checktime
+call assert_equal('changed by AI', getline(1), 'External change must reload')
+bwipeout!
+call delete(s:reload_file)
+
 call writefile(v:errors, $VIM_TEST_ERRORS)
 if !empty(v:errors)
   cquit

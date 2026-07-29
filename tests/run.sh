@@ -101,6 +101,10 @@ rg -Fq '`\i`' "${vim_root}/README.md" ||
   fail "README must document the IDE switch"
 rg -Fq '`\ai`' "${vim_root}/README.md" ||
   fail "README must document the AI switch"
+rg -Fq 'FocusGained,BufEnter,CursorHold,CursorHoldI' "${vim_root}/vimrc" ||
+  fail "External file changes must be checked while Vim is idle"
+rg -Fq ':checktime' "${vim_root}/README.md" ||
+  fail "README must document manual file refresh"
 rg -Fq '~/.vimrc' "${vim_root}/README.md" ||
   fail "README must document the single vimrc entry point"
 

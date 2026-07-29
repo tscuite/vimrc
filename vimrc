@@ -214,6 +214,6 @@ augroup tscuite_vim
   autocmd FileType javascript,typescript,vue setlocal expandtab tabstop=2 shiftwidth=2 softtabstop=2
   autocmd FileType markdown setlocal expandtab tabstop=2 shiftwidth=2 softtabstop=2 wrap linebreak
   autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line('$') | execute 'normal! g`"' | endif
-  autocmd FocusGained,BufEnter * silent! checktime
+  autocmd FocusGained,BufEnter,CursorHold,CursorHoldI * silent! checktime
   autocmd CursorHold * if g:ide_enabled && exists('*CocActionAsync') | silent! call CocActionAsync('highlight') | endif
 augroup END
