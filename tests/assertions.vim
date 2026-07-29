@@ -10,7 +10,7 @@ call assert_false(&number, 'Line numbers must be disabled')
 call assert_true(&hidden, 'Hidden buffers must be enabled')
 call assert_equal(300, &updatetime, 'updatetime')
 call assert_equal(500, &timeoutlen, 'timeoutlen')
-call assert_equal('yes', &signcolumn, 'signcolumn')
+call assert_equal('auto', &signcolumn, 'signcolumn')
 call assert_equal('', get(g:, 'colors_name', ''), 'Do not force a colorscheme')
 for s:encoding in ['ucs-bom', 'utf-8', 'gb18030', 'gbk', 'gb2312', 'cp936', 'latin1']
   call assert_true(index(split(&fileencodings, ','), s:encoding) >= 0,

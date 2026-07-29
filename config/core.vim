@@ -31,7 +31,7 @@ set autoindent backspace=indent,eol,start
 set ignorecase smartcase incsearch hlsearch
 set nowrap splitbelow splitright
 set wildmenu wildignorecase
-set scrolloff=5 signcolumn=yes
+set scrolloff=5 signcolumn=auto
 set updatetime=300 timeoutlen=500 ttimeoutlen=10
 if has('macunix') && has('clipboard')
   set clipboard=unnamedplus
