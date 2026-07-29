@@ -1,5 +1,6 @@
 let mapleader = '\'                          " Leader 键
 let g:ide_enabled = 0                        " IDE 默认关闭
+let g:ai_enabled = 0                         " AI 默认关闭
 let g:coc_start_at_startup = 0
 let g:copilot_enabled = 0
 let g:copilot_no_maps = 1
@@ -71,6 +72,7 @@ highlight FoldColumn ctermbg=NONE guibg=NONE
 
 " 快捷键
 nnoremap <silent> <leader>i :call <SID>ToggleIDE()<CR>
+nnoremap <silent> <leader>ai :call <SID>ToggleAI()<CR>
 nnoremap <silent> <leader>m :call <SID>ToggleMouse()<CR>
 nnoremap <silent> <leader>p :Files<CR>
 nnoremap <silent> <leader>f :Rg<CR>
@@ -132,7 +134,7 @@ inoremap <silent><expr> <S-Tab> g:ide_enabled && coc#pum#visible()
 inoremap <silent><expr> <CR> g:ide_enabled && coc#pum#visible()
       \ ? coc#pum#confirm() : "\<C-G>u\<CR>"
 inoremap <silent><expr> <C-K> g:ide_enabled ? coc#refresh() : "\<C-K>"
-inoremap <silent><script><expr> <C-J> g:ide_enabled
+inoremap <silent><script><expr> <C-J> g:ai_enabled
       \ ? copilot#Accept("\<CR>") : "\<C-J>"
 
 nnoremap <silent> gd :call <SID>Coc('jumpDefinition', 'gd')<CR>
@@ -151,27 +153,42 @@ nnoremap <silent> <leader>o :CocList outline<CR>
 
 function! s:ToggleIDE() abort
   if !g:ide_enabled
-    if !exists('*plug#load')
-      echom '请先运行 ~/.vim/scripts/bootstrap.sh'
-      return
-    endif
-    call plug#load('copilot.vim')
-    if exists(':CocStart') != 2 || exists(':Copilot') != 2
+    if exists(':CocStart') != 2
       echom 'IDE 插件未安装，请运行 bootstrap.sh'
       return
     endif
     let g:ide_enabled = 1
-    let g:copilot_enabled = 1
     silent! CocStart
-    silent! Copilot enable
-    silent! Copilot restart
     echom 'IDE 已开启'
     return
   endif
 
   let g:ide_enabled = 0
-  let g:copilot_enabled = 0
   call coc#rpc#stop()
+  echom 'IDE 已关闭'
+endfunction
+
+function! s:ToggleAI() abort
+  if !g:ai_enabled
+    if !exists('*plug#load')
+      echom '请先运行 ~/.vim/scripts/bootstrap.sh'
+      return
+    endif
+    call plug#load('copilot.vim')
+    if exists(':Copilot') != 2
+      echom 'AI 插件未安装，请运行 bootstrap.sh'
+      return
+    endif
+    let g:ai_enabled = 1
+    let g:copilot_enabled = 1
+    silent! Copilot enable
+    silent! Copilot restart
+    echom 'AI 已开启'
+    return
+  endif
+
+  let g:ai_enabled = 0
+  let g:copilot_enabled = 0
   silent! Copilot disable
   try
     let l:copilot = copilot#RunningClient()
@@ -180,7 +197,7 @@ function! s:ToggleIDE() abort
     endif
   catch
   endtry
-  echom 'IDE 已关闭'
+  echom 'AI 已关闭'
 endfunction
 
 function! s:ToggleMouse() abort

@@ -1,6 +1,7 @@
 set nomore
 
 call assert_equal(0, get(g:, 'ide_enabled', -1), 'IDE must start disabled')
+call assert_equal(0, get(g:, 'ai_enabled', -1), 'AI must start disabled')
 call assert_equal(0, get(g:, 'coc_start_at_startup', -1))
 call assert_equal(0, get(g:, 'copilot_enabled', -1))
 call assert_equal('', &mouse, 'Mouse must start disabled')
@@ -22,7 +23,7 @@ call assert_equal('', synIDattr(hlID('FoldColumn'), 'bg', 'gui'))
 call assert_equal(1, get(g:, 'java_ignore_markdown', 0))
 
 for s:key in [
-      \ '\i', '\m', '\p', '\f', '\b', '\h', '\e', '\c',
+      \ '\i', '\ai', '\m', '\p', '\f', '\b', '\h', '\e', '\c',
       \ '\gs', '\gd', '\gb', '\gp',
       \ '\w', '\q', '\x', '[b', ']b',
       \ ]
@@ -35,6 +36,8 @@ endfor
 for s:key in ['<Tab>', '<S-Tab>', '<CR>', '<C-K>', '<C-J>']
   call assert_false(empty(maparg(s:key, 'i')), 'Missing insert mapping: ' . s:key)
 endfor
+call assert_match('g:ai_enabled', maparg('<C-J>', 'i'),
+      \ 'Copilot accept must depend on the AI switch')
 
 call assert_true(exists('g:coc_global_extensions'), 'CoC extensions missing')
 for s:extension in [

@@ -70,6 +70,8 @@ fi
 
 rg -Fq 'let g:ide_enabled = 0' "${vim_root}/vimrc" ||
   fail "IDE must be disabled by default"
+rg -Fq 'let g:ai_enabled = 0' "${vim_root}/vimrc" ||
+  fail "AI must be disabled by default"
 rg -q '^set[[:space:]]+nonu([[:space:]]|$)' "${vim_root}/vimrc" ||
   fail "Line numbers must be disabled"
 if rg -n \
@@ -79,14 +81,26 @@ if rg -n \
 fi
 rg -Fq '<leader>i' "${vim_root}/vimrc" ||
   fail "IDE toggle mapping is missing"
+rg -Fq '<leader>ai' "${vim_root}/vimrc" ||
+  fail "AI toggle mapping is missing"
 rg -Fq '<leader>m' "${vim_root}/vimrc" ||
   fail "Mouse toggle mapping is missing"
+ide_function="$(sed -n '/^function! s:ToggleIDE()/,/^endfunction$/p' \
+  "${vim_root}/vimrc")"
+ai_function="$(sed -n '/^function! s:ToggleAI()/,/^endfunction$/p' \
+  "${vim_root}/vimrc")"
+[[ "${ide_function}" != *Copilot* ]] ||
+  fail "IDE toggle must not control Copilot"
+[[ "${ai_function}" != *Coc* ]] ||
+  fail "AI toggle must not control CoC"
 if rg -Fq '/ide' "${vim_root}/vimrc" ||
   rg -Fq 'command! IDE' "${vim_root}/vimrc"; then
   fail "Only the Leader-i IDE toggle should remain"
 fi
 rg -Fq '`\i`' "${vim_root}/README.md" ||
   fail "README must document the IDE switch"
+rg -Fq '`\ai`' "${vim_root}/README.md" ||
+  fail "README must document the AI switch"
 rg -Fq '~/.vimrc' "${vim_root}/README.md" ||
   fail "README must document the single vimrc entry point"
 
