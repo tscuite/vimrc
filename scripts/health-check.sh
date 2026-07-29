@@ -60,7 +60,7 @@ if command -v node >/dev/null 2>&1; then
   fi
 fi
 
-for config_file in vimrc; do
+for config_file in vimrc ide.vim; do
   if [[ -r "${vim_root}/${config_file}" ]]; then
     pass "config present: ${config_file}"
   else

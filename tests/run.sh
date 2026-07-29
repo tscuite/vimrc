@@ -11,6 +11,7 @@ fail() {
 
 for required_file in \
   vimrc \
+  ide.vim \
   README.md \
   .gitignore \
   scripts/bootstrap.sh \
@@ -23,7 +24,7 @@ done
 
 if find "${vim_root}/config" "${vim_root}/after/ftplugin" \
   -type f -print -quit 2>/dev/null | rg -q .; then
-  fail "runtime configuration must stay in vimrc"
+  fail "runtime configuration must stay in the root Vim files"
 fi
 
 error_file="$(mktemp "${TMPDIR:-/tmp}/vim-config-errors.XXXXXX")"
@@ -68,9 +69,9 @@ if rg -n \
   fail "a redundant plugin is still declared"
 fi
 
-rg -Fq 'let g:ide_enabled = 0' "${vim_root}/vimrc" ||
+rg -Fq 'let g:ide_enabled = 0' "${vim_root}/ide.vim" ||
   fail "IDE must be disabled by default"
-rg -Fq 'let g:ai_enabled = 0' "${vim_root}/vimrc" ||
+rg -Fq 'let g:ai_enabled = 0' "${vim_root}/ide.vim" ||
   fail "AI must be disabled by default"
 rg -q '^set[[:space:]]+nonu([[:space:]]|$)' "${vim_root}/vimrc" ||
   fail "Line numbers must be disabled"
@@ -79,23 +80,32 @@ if rg -n \
   "${vim_root}/vimrc"; then
   fail "Terminal colors must not be overridden"
 fi
-rg -Fq '<leader>i' "${vim_root}/vimrc" ||
+rg -Fq '<leader>i' "${vim_root}/ide.vim" ||
   fail "IDE toggle mapping is missing"
-rg -Fq '<leader>ai' "${vim_root}/vimrc" ||
+rg -Fq '<leader>ai' "${vim_root}/ide.vim" ||
   fail "AI toggle mapping is missing"
-rg -Fq '<leader>m' "${vim_root}/vimrc" ||
+rg -Fq '<leader>m' "${vim_root}/ide.vim" ||
   fail "Mouse toggle mapping is missing"
 ide_function="$(sed -n '/^function! s:ToggleIDE()/,/^endfunction$/p' \
-  "${vim_root}/vimrc")"
+  "${vim_root}/ide.vim")"
 ai_function="$(sed -n '/^function! s:ToggleAI()/,/^endfunction$/p' \
-  "${vim_root}/vimrc")"
+  "${vim_root}/ide.vim")"
 [[ "${ide_function}" != *Copilot* ]] ||
   fail "IDE toggle must not control Copilot"
 [[ "${ai_function}" != *Coc* ]] ||
   fail "AI toggle must not control CoC"
-if rg -Fq '/ide' "${vim_root}/vimrc" ||
-  rg -Fq 'command! IDE' "${vim_root}/vimrc"; then
+if rg -n \
+  '^[[:space:]]*(nnoremap|noremap|nmap)[[:space:]].*/ide' \
+  "${vim_root}/vimrc" "${vim_root}/ide.vim" ||
+  rg -Fq 'command! IDE' "${vim_root}/vimrc" "${vim_root}/ide.vim"; then
   fail "Only the Leader-i IDE toggle should remain"
+fi
+rg -Fq "g:vim_config_root . '/ide.vim'" "${vim_root}/vimrc" ||
+  fail "vimrc must source ide.vim"
+if rg -n \
+  'g:coc_global_extensions|function! s:Toggle(IDE|AI|Mouse)' \
+  "${vim_root}/vimrc"; then
+  fail "IDE, AI, or mouse configuration remains in vimrc"
 fi
 rg -Fq '`\i`' "${vim_root}/README.md" ||
   fail "README must document the IDE switch"
@@ -127,6 +137,7 @@ rg -Fq '/docs/' "${vim_root}/.gitignore" ||
 
 for runtime_file in \
   vimrc \
+  ide.vim \
   scripts/bootstrap.sh \
   scripts/health-check.sh \
   snapshot.vim; do

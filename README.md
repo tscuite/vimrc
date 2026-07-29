@@ -1,7 +1,7 @@
 # Vim 配置
 
-这是一个面向 macOS Vim 9 的单文件配置。插件、选项、快捷键和 CoC 设置
-都集中在 `~/.vimrc`；GitHub Copilot 只负责 AI 建议。
+这是一个面向 macOS Vim 9 的精简配置。`~/.vimrc` 保存插件和基础编辑，
+`~/.vim/ide.vim` 保存 IDE、AI、鼠标开关及相关快捷键。
 
 ## 环境要求
 
@@ -25,6 +25,8 @@ bash ~/.vim/scripts/bootstrap.sh
 bash ~/.vim/scripts/health-check.sh
 ```
 
+主配置会自动加载同目录下的 `ide.vim`，无需再创建额外软链接。
+
 ### Java 路径配置
 
 Java 项目和 Gradle 默认使用：
@@ -39,7 +41,7 @@ Java 项目和 Gradle 默认使用：
 /Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
 ```
 
-这两个路径都只复用现有 JDK，不会安装 Java。默认值位于 `~/.vimrc` 的
+这两个路径都只复用现有 JDK，不会安装 Java。默认值位于 `~/.vim/ide.vim` 的
 `g:vim_java_home` 和 `g:vim_java_tooling_home`；建议在 `~/.zshrc` 中覆盖：
 
 ```zsh
