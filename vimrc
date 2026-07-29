@@ -65,7 +65,9 @@ let g:fzf_layout = {'down': '40%'}
 filetype plugin indent on
 syntax enable
 
-" 配色沿用终端
+" Monokai 风格，背景沿用终端
+colorscheme unokai
+highlight Normal ctermbg=NONE guibg=NONE
 highlight SignColumn ctermbg=NONE guibg=NONE
 highlight FoldColumn ctermbg=NONE guibg=NONE
 
