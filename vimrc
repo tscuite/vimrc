@@ -32,7 +32,7 @@ endif
 
 " 基础设置
 set encoding=utf-8                             " UTF-8 编码
-set fileencodings=utf-8,gb18030,gbk,ucs-bom   " 识别文件编码
+set fileencodings=ucs-bom,utf-8,gb18030,gbk,gb2312,cp936,latin1 " 识别文件编码
 set nonu                                       " 不显示行号
 set hidden autoread                            " 缓冲区和自动重读
 set showcmd laststatus=2                       " 命令和状态栏
@@ -65,12 +65,7 @@ let g:fzf_layout = {'down': '40%'}
 filetype plugin indent on
 syntax enable
 
-" 配色
-if exists('+termguicolors')
-  set notermguicolors
-endif
-set background=light
-silent! colorscheme default
+" 配色沿用旧配置和终端
 highlight SignColumn ctermbg=NONE guibg=NONE
 highlight FoldColumn ctermbg=NONE guibg=NONE
 

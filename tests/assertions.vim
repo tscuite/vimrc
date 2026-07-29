@@ -10,9 +10,11 @@ call assert_true(&hidden, 'Hidden buffers must be enabled')
 call assert_equal(300, &updatetime, 'updatetime')
 call assert_equal(500, &timeoutlen, 'timeoutlen')
 call assert_equal('yes', &signcolumn, 'signcolumn')
-call assert_false(&termguicolors, 'Keep terminal-controlled colors')
-call assert_equal('light', &background, 'Keep the original background')
-call assert_equal('default', get(g:, 'colors_name', 'default'), 'colorscheme')
+call assert_equal('', get(g:, 'colors_name', ''), 'Do not force a colorscheme')
+for s:encoding in ['ucs-bom', 'utf-8', 'gb18030', 'gbk', 'gb2312', 'cp936', 'latin1']
+  call assert_true(index(split(&fileencodings, ','), s:encoding) >= 0,
+        \ 'Missing file encoding: ' . s:encoding)
+endfor
 call assert_equal('', synIDattr(hlID('SignColumn'), 'bg', 'cterm'))
 call assert_equal('', synIDattr(hlID('SignColumn'), 'bg', 'gui'))
 call assert_equal('', synIDattr(hlID('FoldColumn'), 'bg', 'cterm'))

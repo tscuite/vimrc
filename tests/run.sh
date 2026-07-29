@@ -72,11 +72,11 @@ rg -Fq 'let g:ide_enabled = 0' "${vim_root}/vimrc" ||
   fail "IDE must be disabled by default"
 rg -q '^set[[:space:]]+nonu([[:space:]]|$)' "${vim_root}/vimrc" ||
   fail "Line numbers must be disabled"
-rg -q '^set[[:space:]]+background=light$' "${vim_root}/vimrc" ||
-  fail "Light background mode must be enabled"
-rg -q '^[[:space:]]*silent![[:space:]]+colorscheme[[:space:]]+default$' \
-  "${vim_root}/vimrc" ||
-  fail "Default colorscheme must be enabled"
+if rg -n \
+  '^[[:space:]]*(set[[:space:]]+(no)?termguicolors|set[[:space:]]+background=|(silent![[:space:]]+)?colorscheme)' \
+  "${vim_root}/vimrc"; then
+  fail "Terminal colors must not be overridden"
+fi
 rg -Fq '<leader>i' "${vim_root}/vimrc" ||
   fail "IDE toggle mapping is missing"
 rg -Fq '<leader>m' "${vim_root}/vimrc" ||
