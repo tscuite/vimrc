@@ -11,8 +11,11 @@ fail() {
 
 for required_file in \
   vimrc \
-  ide.vim \
-  README.md \
+  config/core.vim \
+  config/ide.vim \
+  config/filetypes.vim \
+  docs/README.md \
+  snapshots/snapshot.vim \
   .gitignore \
   scripts/bootstrap.sh \
   scripts/health-check.sh \
@@ -22,9 +25,9 @@ for required_file in \
     fail "missing ${required_file}"
 done
 
-if find "${vim_root}/config" "${vim_root}/after/ftplugin" \
+if find "${vim_root}/after/ftplugin" \
   -type f -print -quit 2>/dev/null | rg -q .; then
-  fail "runtime configuration must stay in the root Vim files"
+  fail "legacy after/ftplugin configuration must stay removed"
 fi
 
 error_file="$(mktemp "${TMPDIR:-/tmp}/vim-config-errors.XXXXXX")"
@@ -55,67 +58,78 @@ run_assertions() {
 run_assertions lightweight
 
 rg -Fq "\" let g:plug_url_format = 'https://bgithub.xyz/%s'" \
-  "${vim_root}/vimrc" ||
+  "${vim_root}/config/core.vim" ||
   fail "disabled bgithub.xyz mirror line is missing"
 if rg -n \
   '^[[:space:]]*let[[:space:]]+g:plug_url_format.*bgithub\.xyz' \
-  "${vim_root}/vimrc"; then
+  "${vim_root}/config/core.vim"; then
   fail "bgithub.xyz mirror is active"
 fi
 
 if rg -n \
   "^\\s*Plug .*(YouCompleteMe|vim-flake8|vim-codefmt|vim-markdown|vim-go|vim-monokai-pro|vim-sleuth|tabular)" \
-  "${vim_root}/vimrc"; then
+  "${vim_root}/config/core.vim"; then
   fail "a redundant plugin is still declared"
 fi
 
-rg -Fq 'let g:ide_enabled = 0' "${vim_root}/ide.vim" ||
+rg -Fq 'let g:ide_enabled = 0' "${vim_root}/config/ide.vim" ||
   fail "IDE must be disabled by default"
-rg -Fq 'let g:ai_enabled = 0' "${vim_root}/ide.vim" ||
+rg -Fq 'let g:ai_enabled = 0' "${vim_root}/config/ide.vim" ||
   fail "AI must be disabled by default"
-rg -q '^set[[:space:]]+nonu([[:space:]]|$)' "${vim_root}/vimrc" ||
+rg -q '^set[[:space:]].*\bnonu\b' "${vim_root}/config/core.vim" ||
   fail "Line numbers must be disabled"
 if rg -n \
   '^[[:space:]]*(set[[:space:]]+(no)?termguicolors|set[[:space:]]+background=|(silent![[:space:]]+)?colorscheme)' \
-  "${vim_root}/vimrc"; then
+  "${vim_root}/config/core.vim"; then
   fail "Terminal colors must not be overridden"
 fi
-rg -Fq '<leader>i' "${vim_root}/ide.vim" ||
+rg -Fq '<leader>i' "${vim_root}/config/ide.vim" ||
   fail "IDE toggle mapping is missing"
-rg -Fq '<leader>ai' "${vim_root}/ide.vim" ||
+rg -Fq '<leader>ai' "${vim_root}/config/ide.vim" ||
   fail "AI toggle mapping is missing"
-rg -Fq '<leader>m' "${vim_root}/ide.vim" ||
+rg -Fq '<leader>m' "${vim_root}/config/ide.vim" ||
   fail "Mouse toggle mapping is missing"
 ide_function="$(sed -n '/^function! s:ToggleIDE()/,/^endfunction$/p' \
-  "${vim_root}/ide.vim")"
+  "${vim_root}/config/ide.vim")"
 ai_function="$(sed -n '/^function! s:ToggleAI()/,/^endfunction$/p' \
-  "${vim_root}/ide.vim")"
+  "${vim_root}/config/ide.vim")"
 [[ "${ide_function}" != *Copilot* ]] ||
   fail "IDE toggle must not control Copilot"
 [[ "${ai_function}" != *Coc* ]] ||
   fail "AI toggle must not control CoC"
 if rg -n \
   '^[[:space:]]*(nnoremap|noremap|nmap)[[:space:]].*/ide' \
-  "${vim_root}/vimrc" "${vim_root}/ide.vim" ||
-  rg -Fq 'command! IDE' "${vim_root}/vimrc" "${vim_root}/ide.vim"; then
+  "${vim_root}/vimrc" "${vim_root}/config/ide.vim" ||
+  rg -Fq 'command! IDE' \
+  "${vim_root}/vimrc" "${vim_root}/config/ide.vim"; then
   fail "Only the Leader-i IDE toggle should remain"
 fi
-rg -Fq "g:vim_config_root . '/ide.vim'" "${vim_root}/vimrc" ||
+rg -Fq "g:vim_config_root . '/config/ide.vim'" "${vim_root}/vimrc" ||
   fail "vimrc must source ide.vim"
+rg -Fq "g:vim_config_root . '/config/core.vim'" "${vim_root}/vimrc" ||
+  fail "vimrc must source core.vim"
+rg -Fq "g:vim_config_root . '/config/filetypes.vim'" "${vim_root}/vimrc" ||
+  fail "vimrc must source filetypes.vim"
+(( "$(wc -l <"${vim_root}/vimrc")" <= 10 )) ||
+  fail "vimrc must remain a small loader"
 if rg -n \
   'g:coc_global_extensions|function! s:Toggle(IDE|AI|Mouse)' \
   "${vim_root}/vimrc"; then
   fail "IDE, AI, or mouse configuration remains in vimrc"
 fi
-rg -Fq '`\i`' "${vim_root}/README.md" ||
+if rg -n 'autocmd FileType' "${vim_root}/vimrc"; then
+  fail "FileType configuration remains in vimrc"
+fi
+rg -Fq '`\i`' "${vim_root}/docs/README.md" ||
   fail "README must document the IDE switch"
-rg -Fq '`\ai`' "${vim_root}/README.md" ||
+rg -Fq '`\ai`' "${vim_root}/docs/README.md" ||
   fail "README must document the AI switch"
-rg -Fq 'FocusGained,BufEnter,CursorHold,CursorHoldI' "${vim_root}/vimrc" ||
+rg -Fq 'FocusGained,BufEnter,CursorHold,CursorHoldI' \
+  "${vim_root}/config/core.vim" ||
   fail "External file changes must be checked while Vim is idle"
-rg -Fq ':checktime' "${vim_root}/README.md" ||
+rg -Fq ':checktime' "${vim_root}/docs/README.md" ||
   fail "README must document manual file refresh"
-rg -Fq '~/.vimrc' "${vim_root}/README.md" ||
+rg -Fq '~/.vimrc' "${vim_root}/docs/README.md" ||
   fail "README must document the single vimrc entry point"
 
 rg -Fq \
@@ -132,15 +146,17 @@ rg -Fq 'coc-go-data/bin/gopls' "${vim_root}/scripts/health-check.sh" ||
 
 rg -Fq '/plugged/' "${vim_root}/.gitignore" ||
   fail ".gitignore must ignore downloaded plugins"
-rg -Fq '/docs/' "${vim_root}/.gitignore" ||
+rg -Fq '/docs/plans/' "${vim_root}/.gitignore" ||
   fail ".gitignore must keep planning documents out of the repository"
 
 for runtime_file in \
   vimrc \
-  ide.vim \
+  config/core.vim \
+  config/ide.vim \
+  config/filetypes.vim \
   scripts/bootstrap.sh \
   scripts/health-check.sh \
-  snapshot.vim; do
+  snapshots/snapshot.vim; do
   if rg -n -i \
     'vimspector|coc-java-debug|debugpy|vscode-js-debug|codelldb' \
     "${vim_root}/${runtime_file}"; then

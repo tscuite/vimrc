@@ -98,7 +98,7 @@ vim \
   -i NONE \
   -n \
   -es \
-  -c "execute 'PlugSnapshot! ' . fnameescape('${vim_root}/snapshot.vim')" \
+  -c "execute 'PlugSnapshot! ' . fnameescape('${vim_root}/snapshots/snapshot.vim')" \
   -c qa
 
 info "Running health check"

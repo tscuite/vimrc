@@ -1,4 +1,4 @@
-" 可选功能默认关闭
+" IDE、AI 和鼠标默认关闭
 let g:ide_enabled = 0
 let g:ai_enabled = 0
 let g:coc_start_at_startup = 0

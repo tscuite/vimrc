@@ -1,7 +1,8 @@
 # Vim 配置
 
-这是一个面向 macOS Vim 9 的精简配置。`~/.vimrc` 保存插件和基础编辑，
-`~/.vim/ide.vim` 保存 IDE、AI、鼠标开关及相关快捷键。
+这是一个面向 macOS Vim 9 的精简配置。`~/.vimrc` 只负责加载配置；
+`config/core.vim` 保存插件和基础编辑，`config/ide.vim` 保存 IDE、AI 和鼠标，
+`config/filetypes.vim` 保存各语言的缩进设置。
 
 ## 环境要求
 
@@ -25,7 +26,7 @@ bash ~/.vim/scripts/bootstrap.sh
 bash ~/.vim/scripts/health-check.sh
 ```
 
-主配置会自动加载同目录下的 `ide.vim`，无需再创建额外软链接。
+主配置会自动加载 `config/` 中的三个文件，无需再创建额外软链接。
 
 ### Java 路径配置
 
@@ -41,8 +42,9 @@ Java 项目和 Gradle 默认使用：
 /Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home
 ```
 
-这两个路径都只复用现有 JDK，不会安装 Java。默认值位于 `~/.vim/ide.vim` 的
-`g:vim_java_home` 和 `g:vim_java_tooling_home`；建议在 `~/.zshrc` 中覆盖：
+这两个路径都只复用现有 JDK，不会安装 Java。默认值位于
+`~/.vim/config/ide.vim` 的 `g:vim_java_home` 和
+`g:vim_java_tooling_home`；建议在 `~/.zshrc` 中覆盖：
 
 ```zsh
 export VIM_JAVA_HOME=/path/to/jdk-17
@@ -74,7 +76,7 @@ VIM_JAVA_TOOLING_HOME=/path/to/jdk-21 \
 复制 JDK，也不会修改 `/Library/Java`。项目的 Java 版本仍为 17。
 
 `bootstrap.sh` 只从官方 GitHub 下载 Vim-Plug 和声明的插件。旧镜像配置
-仍保留在 `~/.vimrc` 中，但已注释：
+仍保留在 `~/.vim/config/core.vim` 中，但已注释：
 
 ```vim
 " let g:plug_url_format = 'https://bgithub.xyz/%s'
@@ -232,7 +234,7 @@ rustup component add rust-analyzer
 
 ```vim
 :PlugUpdate
-:PlugSnapshot! ~/.vim/snapshot.vim
+:PlugSnapshot! ~/.vim/snapshots/snapshot.vim
 :CocUpdate
 ```
 
@@ -244,7 +246,7 @@ bash ~/.vim/scripts/health-check.sh
 git -C ~/.vim status
 ```
 
-确认正常后再提交 `snapshot.vim` 和其他配置变更。
+确认正常后再提交 `snapshots/snapshot.vim` 和其他配置变更。
 
 ## 模板
 
