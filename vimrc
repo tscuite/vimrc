@@ -1,62 +1,52 @@
-" 总开关：0 为轻量模式，1 为 CoC + Copilot。
-let g:enable_ide = get(g:, 'enable_ide', 0)
-let mapleader = '\'
+let g:enable_ide = get(g:, 'enable_ide', 0) " 0：轻量；1：CoC + Copilot
+let mapleader = '\'                          " Leader 键
 set nocompatible
 let g:vim_config_root = fnamemodify(resolve(expand('<sfile>:p')), ':h')
 execute 'set runtimepath^=' . fnameescape(g:vim_config_root)
 
-" 插件 -------------------------------------------------------------------------
-" 旧镜像仅保留备用，默认使用官方 GitHub。
+" 插件
+" 旧镜像仅保留备用，默认使用官方 GitHub
 " let g:plug_url_format = 'https://bgithub.xyz/%s'
 
 if filereadable(g:vim_config_root . '/autoload/plug.vim')
   execute 'source ' . fnameescape(g:vim_config_root . '/autoload/plug.vim')
   call plug#begin(g:vim_config_root . '/plugged')
   if g:enable_ide
-    " CoC：补全、诊断、格式化和代码跳转。
-    Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    " Copilot：AI 代码建议。
-    Plug 'github/copilot.vim'
+    Plug 'neoclide/coc.nvim', {'branch': 'release'} | " 补全与代码跳转
+    Plug 'github/copilot.vim'                        | " AI 代码建议
   endif
-  " fzf：模糊搜索引擎。
-  Plug 'junegunn/fzf', {'do': { -> fzf#install() }}
-  " fzf.vim：文件、文本、缓冲区和历史搜索界面。
-  Plug 'junegunn/fzf.vim'
-  " NERDTree：文件树。
-  Plug 'preservim/nerdtree', {'on': 'NERDTreeToggle'}
-  " Fugitive：在 Vim 中使用 Git。
-  Plug 'tpope/vim-fugitive'
-  " GitGutter：在左侧显示 Git 修改标记。
-  Plug 'airblade/vim-gitgutter'
-  " Lightline：简洁状态栏。
-  Plug 'itchyny/lightline.vim'
-  " Surround：快速修改括号、引号和标签。
-  Plug 'tpope/vim-surround'
-  " Repeat：让插件操作支持点号重复。
-  Plug 'tpope/vim-repeat'
-  " Commentary：快速注释和取消注释。
-  Plug 'tpope/vim-commentary'
-  " Sleuth：自动识别项目缩进风格。
-  Plug 'tpope/vim-sleuth'
-  " Templates：新建文件时插入模板。
-  Plug 'tibabit/vim-templates'
+  Plug 'junegunn/fzf', {'do': { -> fzf#install() }}  | " 模糊搜索
+  Plug 'junegunn/fzf.vim'                            | " 搜索界面
+  Plug 'preservim/nerdtree', {'on': 'NERDTreeToggle'} | " 文件树
+  Plug 'tpope/vim-fugitive'                          | " Git
+  Plug 'airblade/vim-gitgutter'                      | " Git 修改标记
+  Plug 'itchyny/lightline.vim'                       | " 状态栏
+  Plug 'tpope/vim-surround'                          | " 修改括号和引号
+  Plug 'tpope/vim-repeat'                            | " 点号重复
+  Plug 'tpope/vim-commentary'                        | " 快速注释
+  Plug 'tpope/vim-sleuth'                            | " 自动识别缩进
+  Plug 'tibabit/vim-templates'                       | " 文件模板
   call plug#end()
 else
   echom '缺少 Vim-Plug，请运行 ~/.vim/scripts/bootstrap.sh'
 endif
 
-" 基础设置 ---------------------------------------------------------------------
-set encoding=utf-8
-set fileencodings=utf-8,gb18030,gbk,gb2312,ucs-bom,latin1
-set number hidden autoread showcmd ruler laststatus=2
-set noswapfile nobackup nowritebackup
-set tabstop=2 shiftwidth=2 softtabstop=2 expandtab
-set autoindent smartindent backspace=indent,eol,start
-set ignorecase smartcase incsearch hlsearch nowrap
-set splitbelow splitright wildmenu wildignorecase
-set scrolloff=5 sidescrolloff=5 signcolumn=yes
-set updatetime=300 timeoutlen=500 ttimeoutlen=10
-set completeopt=menuone,noinsert,noselect shortmess+=c
+" 基础设置
+set encoding=utf-8                             " UTF-8 编码
+set fileencodings=utf-8,gb18030,gbk,ucs-bom   " 自动识别文件编码
+set nonu                                       " 不显示行号
+set hidden autoread                            " 切换缓冲区并自动重读
+set showcmd laststatus=2                       " 显示命令和状态栏
+set noswapfile nobackup nowritebackup          " 不生成临时备份
+set tabstop=2 shiftwidth=2 softtabstop=2 expandtab " 默认两空格缩进
+set autoindent backspace=indent,eol,start       " 自动缩进和正常退格
+set ignorecase smartcase incsearch hlsearch    " 智能搜索
+set nowrap                                     " 不自动换行
+set splitbelow splitright                      " 新窗口在下方或右侧
+set wildmenu wildignorecase                    " 命令行补全
+set scrolloff=5 signcolumn=yes                 " 保留上下文和标记列
+set updatetime=300 timeoutlen=500 ttimeoutlen=10 " 缩短响应时间
+set completeopt=menuone,noinsert,noselect shortmess+=c " 补全菜单
 if has('macunix') && has('clipboard')
   set clipboard=unnamedplus
 endif
@@ -74,7 +64,7 @@ let g:fzf_layout = {'down': '40%'}
 filetype plugin indent on
 syntax enable
 
-" 保留原来的终端配色和背景。
+" 配色
 if exists('+termguicolors')
   set notermguicolors
 endif
@@ -83,7 +73,7 @@ silent! colorscheme default
 highlight SignColumn ctermbg=NONE guibg=NONE
 highlight FoldColumn ctermbg=NONE guibg=NONE
 
-" 文件、Git 和缓冲区 -----------------------------------------------------------
+" 快捷键
 nnoremap <silent> <leader>p :Files<CR>
 nnoremap <silent> <leader>f :Rg<CR>
 nnoremap <silent> <leader>b :Buffers<CR>
@@ -100,7 +90,7 @@ nnoremap <silent> <leader>x :xit<CR>
 nnoremap <silent> [b :bprevious<CR>
 nnoremap <silent> ]b :bnext<CR>
 
-" IDE：仅在 g:enable_ide = 1 时加载 --------------------------------------------
+" IDE（仅在 g:enable_ide = 1 时加载）
 if g:enable_ide
   let g:copilot_no_tab_map = 1
   let g:coc_global_extensions = [
@@ -166,7 +156,7 @@ if g:enable_ide
   nnoremap <silent> <leader>o :CocList outline<CR>
 endif
 
-" 文件类型和常用行为 -----------------------------------------------------------
+" 文件类型
 augroup tscuite_vim
   autocmd!
   autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=0

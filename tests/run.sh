@@ -72,6 +72,8 @@ fi
 rg -Fq "let g:enable_ide = get(g:, 'enable_ide', 0)" \
   "${vim_root}/vimrc" ||
   fail "IDE must be disabled by default"
+rg -q '^set[[:space:]]+nonu([[:space:]]|$)' "${vim_root}/vimrc" ||
+  fail "Line numbers must be disabled"
 if rg -Fq '<leader>j' "${vim_root}/vimrc"; then
   fail "Java-specific toggle must not remain"
 fi

@@ -3,7 +3,7 @@ let s:ide = get(g:, 'enable_ide', -1)
 
 call assert_true(index([0, 1], s:ide) >= 0, 'IDE switch must be 0 or 1')
 call assert_equal('\', get(g:, 'mapleader', ''), 'Leader must be backslash')
-call assert_true(&number, 'Line numbers must be enabled')
+call assert_false(&number, 'Line numbers must be disabled')
 call assert_true(&hidden, 'Hidden buffers must be enabled')
 call assert_equal(300, &updatetime, 'updatetime')
 call assert_equal(500, &timeoutlen, 'timeoutlen')
