@@ -74,15 +74,19 @@ if rg -n \
   "${vim_root}/config/plugins.vim"; then
   fail "a redundant plugin is still declared"
 fi
-if rg -n -i \
-  'copilot|ai_enabled|TscuiteToggleAI|<leader>ai' \
-  "${vim_root}/config" \
-  "${vim_root}/docs/README.md" \
-  "${vim_root}/snapshots/snapshot.vim"; then
-  fail "Copilot configuration must stay removed"
+rg -Fq "Plug 'github/copilot.vim', {'on': 'Copilot'}" \
+  "${vim_root}/config/plugins.vim" ||
+  fail "Copilot must be declared as an on-demand plugin"
+rg -Fq 'let g:ai_enabled = 0' "${vim_root}/config/ide.vim" ||
+  fail "AI must be disabled by default"
+rg -Fq '<leader><leader>' "${vim_root}/config/mappings.vim" ||
+  fail "AI toggle mapping is missing"
+[[ ! -d "${vim_root}/pack/github/start/copilot.vim" ]] ||
+  fail "Copilot must not remain in the auto-start package directory"
+if rg -n -i '<leader>ai' \
+  "${vim_root}/config" "${vim_root}/docs/README.md"; then
+  fail "Leader-ai conflicts with the existing Leader-a mapping"
 fi
-[[ ! -d "${vim_root}/plugged/copilot.vim" ]] ||
-  fail "Copilot plugin directory must be removed"
 
 rg -Fq 'let g:ide_enabled = 0' "${vim_root}/config/ide.vim" ||
   fail "IDE must be disabled by default"

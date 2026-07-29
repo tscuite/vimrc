@@ -1,6 +1,6 @@
 # Vim 配置
 
-面向 macOS Vim 9 的精简配置。Leader 为反斜杠 `\`，IDE 和鼠标默认关闭。
+面向 macOS Vim 9 的精简配置。Leader 为反斜杠 `\`，IDE、AI 和鼠标默认关闭。
 
 ## 安装
 
@@ -45,12 +45,15 @@ Java 21，不会复制或安装 JDK。
 ## 使用
 
 按 `\i` 开启或关闭 CoC。关闭时不会启动 JDT.LS、Gradle 或其他语言服务。
+按 `\\` 开启或关闭 Copilot；插件按需加载，关闭时同时停止其后台进程。
+首次使用先开启 AI，再执行 `:Copilot setup` 完成登录。
 外部工具修改文件后 Vim 会自动检查；立即刷新使用 `:checktime`，确认放弃
 未保存内容并重新读取磁盘文件使用 `:edit!`。
 
 | 分类 | 快捷键 / 命令 | 功能 |
 | --- | --- | --- |
 | 开关 | `\i` | 开启/关闭 IDE（CoC） |
+| 开关 | `\\` | 开启/关闭 AI（Copilot） |
 | 开关 | `\m` | 开启/关闭鼠标 |
 | 文件 | `\p` | 查找文件 |
 | 文件 | `\f` | 全局文本搜索 |
@@ -103,6 +106,7 @@ rustup component add rust-analyzer
 ```vim
 :CocInfo
 :CocUpdate
+:Copilot status
 :PlugUpdate
 :PlugSnapshot! ~/.vim/snapshots/snapshot.vim
 ```

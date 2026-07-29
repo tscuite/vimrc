@@ -1,7 +1,10 @@
 set nomore
 
 call assert_equal(0, get(g:, 'ide_enabled', -1), 'IDE must start disabled')
+call assert_equal(0, get(g:, 'ai_enabled', -1), 'AI must start disabled')
 call assert_equal(0, get(g:, 'coc_start_at_startup', -1))
+call assert_equal(0, get(g:, 'copilot_enabled', -1))
+call assert_false(exists('g:loaded_copilot'), 'Copilot must load on demand')
 call assert_equal('', &mouse, 'Mouse must start disabled')
 call assert_equal('\', get(g:, 'mapleader', ''), 'Leader must be backslash')
 call assert_false(&number, 'Line numbers must be disabled')
@@ -24,6 +27,7 @@ for s:function in [
       \ 'TscuiteCheckBackspace',
       \ 'TscuiteCoc',
       \ 'TscuiteToggleIDE',
+      \ 'TscuiteToggleAI',
       \ 'TscuiteToggleMouse',
       \ ]
   call assert_true(exists('*' . s:function), 'Missing function: ' . s:function)
@@ -34,7 +38,7 @@ call TscuiteToggleMouse()
 call assert_equal('', &mouse, 'Mouse toggle must restore disabled state')
 
 for s:key in [
-      \ '\i', '\m', '\p', '\f', '\b', '\h', '\e', '\c',
+      \ '\i', '\\', '\m', '\p', '\f', '\b', '\h', '\e', '\c',
       \ '\gs', '\gd', '\gb', '\gp',
       \ '\w', '\q', '\x', '[b', ']b',
       \ ]
@@ -48,7 +52,7 @@ for s:key in ['<Tab>', '<S-Tab>', '<CR>', '<C-K>']
   call assert_false(empty(maparg(s:key, 'i')), 'Missing insert mapping: ' . s:key)
 endfor
 call assert_true(empty(maparg('<C-J>', 'i')), 'Ctrl-J must use Vim default behavior')
-call assert_true(empty(maparg('\ai', 'n')), 'AI toggle must be removed')
+call assert_true(empty(maparg('\ai', 'n')), 'Leader-ai must stay unused')
 
 call assert_true(exists('g:coc_global_extensions'), 'CoC extensions missing')
 for s:extension in [

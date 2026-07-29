@@ -36,6 +36,7 @@ nnoremap <silent> <leader>o :CocList outline<CR>
 
 " 功能开关
 nnoremap <silent> <leader>i :call TscuiteToggleIDE()<CR>
+nnoremap <silent> <leader><leader> :call TscuiteToggleAI()<CR>
 nnoremap <silent> <leader>m :call TscuiteToggleMouse()<CR>
 
 " 补全
