@@ -52,7 +52,6 @@ run_assertions() {
 }
 
 run_assertions lightweight
-run_assertions ide --cmd 'let g:enable_ide = 1'
 
 rg -Fq "\" let g:plug_url_format = 'https://bgithub.xyz/%s'" \
   "${vim_root}/vimrc" ||
@@ -64,20 +63,24 @@ if rg -n \
 fi
 
 if rg -n \
-  "^\\s*Plug .*(YouCompleteMe|vim-flake8|vim-codefmt|vim-markdown|vim-go|vim-monokai-pro|tabular)" \
+  "^\\s*Plug .*(YouCompleteMe|vim-flake8|vim-codefmt|vim-markdown|vim-go|vim-monokai-pro|vim-sleuth|tabular)" \
   "${vim_root}/vimrc"; then
   fail "a redundant plugin is still declared"
 fi
 
-rg -Fq "let g:enable_ide = get(g:, 'enable_ide', 0)" \
-  "${vim_root}/vimrc" ||
+rg -Fq 'let g:ide_enabled = 0' "${vim_root}/vimrc" ||
   fail "IDE must be disabled by default"
 rg -q '^set[[:space:]]+nonu([[:space:]]|$)' "${vim_root}/vimrc" ||
   fail "Line numbers must be disabled"
-if rg -Fq '<leader>j' "${vim_root}/vimrc"; then
-  fail "Java-specific toggle must not remain"
+rg -Fq '<leader>i' "${vim_root}/vimrc" ||
+  fail "IDE toggle mapping is missing"
+rg -Fq '<leader>m' "${vim_root}/vimrc" ||
+  fail "Mouse toggle mapping is missing"
+if rg -Fq '/ide' "${vim_root}/vimrc" ||
+  rg -Fq 'command! IDE' "${vim_root}/vimrc"; then
+  fail "Only the Leader-i IDE toggle should remain"
 fi
-rg -Fq 'g:enable_ide' "${vim_root}/README.md" ||
+rg -Fq '`\i`' "${vim_root}/README.md" ||
   fail "README must document the IDE switch"
 rg -Fq '~/.vimrc' "${vim_root}/README.md" ||
   fail "README must document the single vimrc entry point"

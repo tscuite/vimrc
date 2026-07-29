@@ -62,7 +62,6 @@ install -m 0644 "${plug_tmp}" "${plug_path}"
 
 info "Installing Vim plugins"
 vim \
-  --cmd 'let g:enable_ide = 1' \
   -Nu "${vim_root}/vimrc" \
   -i NONE \
   -n \
@@ -78,14 +77,11 @@ coc_extensions=(
   coc-java
   coc-rust-analyzer
   coc-json
-  coc-eslint
   coc-prettier
-  @yaegassy/coc-ruff
 )
 
 info "Installing CoC extensions"
 vim \
-  --cmd 'let g:enable_ide = 1' \
   -Nu "${vim_root}/vimrc" \
   -i NONE \
   -n \
@@ -98,7 +94,6 @@ info "Configuring coc-java to reuse the existing Java 17 and Java 21"
 
 info "Writing plugin snapshot"
 vim \
-  --cmd 'let g:enable_ide = 1' \
   -Nu "${vim_root}/vimrc" \
   -i NONE \
   -n \

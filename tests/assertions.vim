@@ -1,7 +1,9 @@
 set nomore
-let s:ide = get(g:, 'enable_ide', -1)
 
-call assert_true(index([0, 1], s:ide) >= 0, 'IDE switch must be 0 or 1')
+call assert_equal(0, get(g:, 'ide_enabled', -1), 'IDE must start disabled')
+call assert_equal(0, get(g:, 'coc_start_at_startup', -1))
+call assert_equal(0, get(g:, 'copilot_enabled', -1))
+call assert_equal('', &mouse, 'Mouse must start disabled')
 call assert_equal('\', get(g:, 'mapleader', ''), 'Leader must be backslash')
 call assert_false(&number, 'Line numbers must be disabled')
 call assert_true(&hidden, 'Hidden buffers must be enabled')
@@ -16,61 +18,54 @@ call assert_equal('', synIDattr(hlID('SignColumn'), 'bg', 'gui'))
 call assert_equal(1, get(g:, 'java_ignore_markdown', 0))
 
 for s:key in [
-      \ '\p', '\f', '\b', '\h', '\e', '\c',
+      \ '\i', '\m', '\p', '\f', '\b', '\h', '\e', '\c',
       \ '\gs', '\gd', '\gb', '\gp',
       \ '\w', '\q', '\x', '[b', ']b',
       \ ]
   call assert_false(empty(maparg(s:key, 'n')), 'Missing mapping: ' . s:key)
 endfor
-
-let s:ide_keys = ['gd', 'gr', 'gi', 'K', '[g', ']g',
+for s:key in ['gd', 'gr', 'gi', 'K', '[g', ']g',
       \ '\a', '\r', '\=', '\l', '\o']
-if s:ide
-  call assert_true(exists('g:coc_global_extensions'), 'CoC extensions missing')
-  for s:extension in [
-        \ 'coc-go',
-        \ 'coc-pyright',
-        \ 'coc-tsserver',
-        \ '@yaegassy/coc-volar',
-        \ 'coc-java',
-        \ 'coc-rust-analyzer',
-        \ 'coc-json',
-        \ 'coc-eslint',
-        \ 'coc-prettier',
-        \ '@yaegassy/coc-ruff',
-        \ ]
-    call assert_true(
-          \ index(g:coc_global_extensions, s:extension) >= 0,
-          \ 'Missing CoC extension: ' . s:extension)
-  endfor
-  for s:key in s:ide_keys
-    call assert_false(empty(maparg(s:key, 'n')), 'Missing IDE mapping: ' . s:key)
-  endfor
-  for s:key in ['<Tab>', '<S-Tab>', '<CR>', '<C-K>', '<C-J>']
-    call assert_false(empty(maparg(s:key, 'i')), 'Missing insert mapping: ' . s:key)
-  endfor
-  call assert_equal(
-        \ g:vim_config_root . '/scripts/rust-analyzer-wrapper.sh',
-        \ get(g:coc_user_config, 'rust-analyzer.server.path', ''))
+  call assert_false(empty(maparg(s:key, 'n')), 'Missing IDE mapping: ' . s:key)
+endfor
+for s:key in ['<Tab>', '<S-Tab>', '<CR>', '<C-K>', '<C-J>']
+  call assert_false(empty(maparg(s:key, 'i')), 'Missing insert mapping: ' . s:key)
+endfor
 
-  let s:zulu_17 = '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
-  let s:zulu_21 = '/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home'
-  if executable(s:zulu_17 . '/bin/javac')
-    call assert_equal(s:zulu_17, g:vim_java_home)
-    call assert_equal(
-          \ s:zulu_17,
-          \ get(g:coc_user_config, 'java.import.gradle.java.home', ''))
-  endif
-  if executable(s:zulu_21 . '/bin/javac')
-    call assert_equal(s:zulu_21, g:vim_java_tooling_home)
-    call assert_equal(
-          \ s:zulu_21,
-          \ get(g:coc_user_config, 'java.jdt.ls.java.home', ''))
-  endif
-else
-  call assert_false(exists('g:coc_global_extensions'))
-  call assert_false(exists('g:coc_user_config'))
-  call assert_true(empty(maparg('gd', 'n')), 'IDE mappings must stay unloaded')
+call assert_true(exists('g:coc_global_extensions'), 'CoC extensions missing')
+for s:extension in [
+      \ 'coc-go',
+      \ 'coc-pyright',
+      \ 'coc-tsserver',
+      \ '@yaegassy/coc-volar',
+      \ 'coc-java',
+      \ 'coc-rust-analyzer',
+      \ 'coc-json',
+      \ 'coc-prettier',
+      \ ]
+  call assert_true(
+        \ index(g:coc_global_extensions, s:extension) >= 0,
+        \ 'Missing CoC extension: ' . s:extension)
+endfor
+call assert_true(index(g:coc_global_extensions, 'coc-eslint') < 0)
+call assert_true(index(g:coc_global_extensions, '@yaegassy/coc-ruff') < 0)
+call assert_equal(
+      \ g:vim_config_root . '/scripts/rust-analyzer-wrapper.sh',
+      \ get(g:coc_user_config, 'rust-analyzer.server.path', ''))
+
+let s:zulu_17 = '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
+let s:zulu_21 = '/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home'
+if executable(s:zulu_17 . '/bin/javac')
+  call assert_equal(s:zulu_17, g:vim_java_home)
+  call assert_equal(
+        \ s:zulu_17,
+        \ get(g:coc_user_config, 'java.import.gradle.java.home', ''))
+endif
+if executable(s:zulu_21 . '/bin/javac')
+  call assert_equal(s:zulu_21, g:vim_java_tooling_home)
+  call assert_equal(
+        \ s:zulu_21,
+        \ get(g:coc_user_config, 'java.jdt.ls.java.home', ''))
 endif
 
 call assert_false(exists('g:plug_url_format'), 'Plugin mirror must be disabled')
@@ -80,6 +75,7 @@ endfor
 for s:key in ["\<F2>", "\<F5>", "\<F9>", "\<F10>", "\<F11>", "\<F12>"]
   call assert_true(empty(maparg(s:key, 'n')), 'Unexpected function-key mapping')
 endfor
+call assert_true(empty(maparg("\<C-M>", 'n')), 'Ctrl-M must remain Enter')
 
 function! s:AssertIndent(filetype, width, uses_spaces) abort
   enew!

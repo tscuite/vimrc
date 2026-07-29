@@ -78,17 +78,19 @@ VIM_JAVA_TOOLING_HOME=/path/to/jdk-21 \
 " let g:plug_url_format = 'https://bgithub.xyz/%s'
 ```
 
-## 总开关
+## 常用开关
 
-`~/.vimrc` 第一行附近只有一个 IDE 开关：
+| 快捷键 | 功能 |
+| --- | --- |
+| `\i` | 开启/关闭 IDE |
+| `\m` | 开启/关闭鼠标支持 |
 
-```vim
-let g:enable_ide = get(g:, 'enable_ide', 0)
-```
+IDE 默认关闭，只加载基础编辑、搜索、文件树和 Git，不启动 CoC、Copilot、
+JDT.LS 或 Gradle。普通模式按 `\i` 开启；再次按 `\i` 会关闭 IDE 并停止
+相关后台服务，无需重启 Vim。
 
-- `0`：轻量模式，只加载基础编辑、搜索、文件树和 Git，不加载 CoC 或
-  Copilot，也不会启动 Node、JDT.LS、Gradle 等语言服务。
-- `1`：启用 CoC、Copilot、补全、诊断和代码跳转；修改后重启 Vim 生效。
+鼠标默认关闭。按 `\m` 开启后可以点击、选择和滚动；再次按下恢复纯键盘
+操作。不要使用 `Ctrl-M`，它在终端 Vim 中等同于回车键。
 
 ## 快捷键
 
@@ -107,7 +109,7 @@ Leader 是反斜杠 `\`。
 
 ### CoC
 
-以下快捷键仅在 `g:enable_ide = 1` 时启用。
+以下快捷键仅在按 `\i` 开启 IDE 后生效。
 
 | 快捷键 | 功能 |
 | --- | --- |
@@ -184,7 +186,8 @@ bash ~/.vim/scripts/bootstrap.sh
 
 ## CoC
 
-声明的扩展覆盖 Go、Python、JavaScript/TypeScript、Vue、Java、Rust、JSON、ESLint、Prettier 和 Ruff。
+声明的扩展覆盖 Go、Python、JavaScript/TypeScript、Vue、Java、Rust、JSON
+和 Prettier。
 
 常用命令：
 
