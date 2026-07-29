@@ -71,20 +71,18 @@ call assert_equal(
       \ g:vim_config_root . '/scripts/rust-analyzer-wrapper.sh',
       \ get(g:coc_user_config, 'rust-analyzer.server.path', ''))
 
-let s:zulu_17 = '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
-let s:zulu_21 = '/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home'
-if executable(s:zulu_17 . '/bin/javac')
-  call assert_equal(s:zulu_17, g:vim_java_home)
-  call assert_equal(
-        \ s:zulu_17,
-        \ get(g:coc_user_config, 'java.import.gradle.java.home', ''))
-endif
-if executable(s:zulu_21 . '/bin/javac')
-  call assert_equal(s:zulu_21, g:vim_java_tooling_home)
-  call assert_equal(
-        \ s:zulu_21,
-        \ get(g:coc_user_config, 'java.jdt.ls.java.home', ''))
-endif
+let s:project_java_home = !empty($JAVA_HOME)
+      \ ? $JAVA_HOME
+      \ : trim(system('/usr/libexec/java_home -v 17'))
+let s:tooling_java_home = trim(system('/usr/libexec/java_home -v 21'))
+call assert_equal(s:project_java_home, g:vim_java_home)
+call assert_equal(
+      \ s:project_java_home,
+      \ get(g:coc_user_config, 'java.import.gradle.java.home', ''))
+call assert_equal(s:tooling_java_home, g:vim_java_tooling_home)
+call assert_equal(
+      \ s:tooling_java_home,
+      \ get(g:coc_user_config, 'java.jdt.ls.java.home', ''))
 
 call assert_false(exists('g:plug_url_format'), 'Plugin mirror must be disabled')
 for s:key in ['\dd', '\db', '\dn', '\di', '\do', '\ds']

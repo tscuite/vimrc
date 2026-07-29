@@ -104,10 +104,8 @@ else
 fi
 
 coc_config_root="${XDG_CONFIG_HOME:-${HOME:-}/.config}/coc"
-project_java_home='/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'
-if [[ -n "${VIM_JAVA_HOME:-}" ]]; then
-  project_java_home="${VIM_JAVA_HOME}"
-elif [[ ! -x "${project_java_home}/bin/javac" &&
+project_java_home="${JAVA_HOME:-}"
+if [[ ! -x "${project_java_home}/bin/javac" &&
   -x /usr/libexec/java_home ]]; then
   project_java_home="$(/usr/libexec/java_home -v 17 2>/dev/null || true)"
 fi
@@ -121,14 +119,11 @@ if [[ -x "${project_java_home}/bin/java" &&
     warn "projects require Java 17; found ${java_version} at ${project_java_home}"
   fi
 else
-  warn 'Java 17 JDK not found; set VIM_JAVA_HOME'
+  warn 'Project JDK not found; set JAVA_HOME or install Java 17'
 fi
 
-tooling_java_home='/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home'
-if [[ -n "${VIM_JAVA_TOOLING_HOME:-}" ]]; then
-  tooling_java_home="${VIM_JAVA_TOOLING_HOME}"
-elif [[ ! -x "${tooling_java_home}/bin/javac" &&
-  -x /usr/libexec/java_home ]]; then
+tooling_java_home=''
+if [[ -x /usr/libexec/java_home ]]; then
   tooling_java_home="$(/usr/libexec/java_home -v 21 2>/dev/null || true)"
 fi
 
@@ -141,7 +136,7 @@ if [[ -x "${tooling_java_home}/bin/java" &&
     warn "coc-java tooling requires Java 21; found ${java_version}"
   fi
 else
-  warn 'Java 21 JDK not found; set VIM_JAVA_TOOLING_HOME'
+  warn 'Java 21 JDK not found; install Java 21 for JDT.LS'
 fi
 
 case "$(uname -m)" in

@@ -6,55 +6,24 @@ die() {
   exit 1
 }
 
-find_java_home() {
-  local major="$1"
-  local environment_name="$2"
-  local preferred_home="$3"
-  local candidate
-  local candidates=()
-
-  if [[ -n "${!environment_name:-}" ]]; then
-    candidates+=("${!environment_name}")
-  fi
-  if [[ -n "${preferred_home}" ]]; then
-    candidates+=("${preferred_home}")
-  fi
-  if [[ -n "${JAVA_HOME:-}" ]]; then
-    candidates+=("${JAVA_HOME}")
-  fi
-
-  for candidate in "${candidates[@]}"; do
-    if [[ -x "${candidate}/bin/java" &&
-      -x "${candidate}/bin/javac" &&
-      "$("${candidate}/bin/javac" -version 2>&1)" == javac\ "${major}".* ]]; then
-      printf '%s\n' "${candidate}"
-      return
-    fi
-  done
-
-  if [[ -x /usr/libexec/java_home ]]; then
-    candidate="$(/usr/libexec/java_home -v "${major}" 2>/dev/null || true)"
-    if [[ -x "${candidate}/bin/java" &&
-      -x "${candidate}/bin/javac" &&
-      "$("${candidate}/bin/javac" -version 2>&1)" == javac\ "${major}".* ]]; then
-      printf '%s\n' "${candidate}"
-      return
-    fi
-  fi
-
-  return 1
+find_macos_java() {
+  [[ -x /usr/libexec/java_home ]] || return 1
+  /usr/libexec/java_home -v "$1" 2>/dev/null
 }
 
-project_java_home="$(find_java_home \
-  17 \
-  VIM_JAVA_HOME \
-  '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home')" ||
-  die 'Java 17 JDK not found; set VIM_JAVA_HOME to an existing JDK 17'
-tooling_java_home="$(find_java_home \
-  21 \
-  VIM_JAVA_TOOLING_HOME \
-  '/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home')" ||
-  die 'Java 21 JDK not found; set VIM_JAVA_TOOLING_HOME to an existing JDK 21'
+project_java_home="${JAVA_HOME:-}"
+if [[ ! -x "${project_java_home}/bin/java" ||
+  ! -x "${project_java_home}/bin/javac" ]]; then
+  project_java_home="$(find_macos_java 17 || true)"
+fi
+[[ -x "${project_java_home}/bin/java" &&
+  -x "${project_java_home}/bin/javac" ]] ||
+  die 'Project JDK not found; set JAVA_HOME or install Java 17'
+
+tooling_java_home="$(find_macos_java 21 || true)"
+[[ -x "${tooling_java_home}/bin/java" &&
+  -x "${tooling_java_home}/bin/javac" ]] ||
+  die 'Java 21 JDK not found; install Java 21 for JDT.LS'
 
 case "$(uname -s)" in
   Darwin)

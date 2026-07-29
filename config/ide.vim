@@ -10,10 +10,14 @@ let g:coc_global_extensions = [
       \ 'coc-go', 'coc-pyright', 'coc-tsserver', '@yaegassy/coc-volar',
       \ 'coc-java', 'coc-rust-analyzer', 'coc-json', 'coc-prettier',
       \ ]
-let g:vim_java_home = expand(get(environ(), 'VIM_JAVA_HOME',
-      \ '/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home'))
-let g:vim_java_tooling_home = expand(get(environ(), 'VIM_JAVA_TOOLING_HOME',
-      \ '/Library/Java/JavaVirtualMachines/zulu-21.jdk/Contents/Home'))
+" 项目和 Gradle：优先使用当前终端的 JAVA_HOME
+let g:vim_java_home = !empty($JAVA_HOME)
+      \ ? $JAVA_HOME
+      \ : trim(system('/usr/libexec/java_home -v 17'))
+
+" JDT.LS：自动寻找 Java 21
+let g:vim_java_tooling_home =
+      \ trim(system('/usr/libexec/java_home -v 21'))
 let g:coc_user_config = {
       \ 'rust-analyzer.server.path':
       \   g:vim_config_root . '/scripts/rust-analyzer-wrapper.sh',
