@@ -1,9 +1,6 @@
-" IDE、AI 和鼠标默认关闭
+" IDE 和鼠标默认关闭
 let g:ide_enabled = 0
-let g:ai_enabled = 0
 let g:coc_start_at_startup = 0
-let g:copilot_enabled = 0
-let g:copilot_no_maps = 1
 set completeopt=menuone,noinsert,noselect shortmess+=c
 set mouse=
 
@@ -59,38 +56,6 @@ function! TscuiteToggleIDE() abort
   let g:ide_enabled = 0
   call coc#rpc#stop()
   echom 'IDE 已关闭'
-endfunction
-
-function! TscuiteToggleAI() abort
-  if !g:ai_enabled
-    if !exists('*plug#load')
-      echom '请先运行 ~/.vim/scripts/bootstrap.sh'
-      return
-    endif
-    call plug#load('copilot.vim')
-    if exists(':Copilot') != 2
-      echom 'AI 插件未安装，请运行 bootstrap.sh'
-      return
-    endif
-    let g:ai_enabled = 1
-    let g:copilot_enabled = 1
-    silent! Copilot enable
-    silent! Copilot restart
-    echom 'AI 已开启'
-    return
-  endif
-
-  let g:ai_enabled = 0
-  let g:copilot_enabled = 0
-  silent! Copilot disable
-  try
-    let l:copilot = copilot#RunningClient()
-    if type(l:copilot) == v:t_dict && has_key(l:copilot, 'Close')
-      call l:copilot.Close()
-    endif
-  catch
-  endtry
-  echom 'AI 已关闭'
 endfunction
 
 function! TscuiteToggleMouse() abort

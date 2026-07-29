@@ -9,7 +9,6 @@ if filereadable(g:vim_config_root . '/autoload/plug.vim')
   execute 'source ' . fnameescape(g:vim_config_root . '/autoload/plug.vim')
   call plug#begin(g:vim_config_root . '/plugged')
   Plug 'neoclide/coc.nvim', {'branch': 'release'}           | " IDE
-  Plug 'github/copilot.vim', {'on': []}                      | " AI 建议
   Plug 'junegunn/fzf', {'do': { -> fzf#install() }}         | " 模糊搜索
   Plug 'junegunn/fzf.vim'                                   | " 搜索界面
   Plug 'preservim/nerdtree', {'on': 'NERDTreeToggle'}       | " 文件树

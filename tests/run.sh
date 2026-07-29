@@ -74,11 +74,18 @@ if rg -n \
   "${vim_root}/config/plugins.vim"; then
   fail "a redundant plugin is still declared"
 fi
+if rg -n -i \
+  'copilot|ai_enabled|TscuiteToggleAI|<leader>ai' \
+  "${vim_root}/config" \
+  "${vim_root}/docs/README.md" \
+  "${vim_root}/snapshots/snapshot.vim"; then
+  fail "Copilot configuration must stay removed"
+fi
+[[ ! -d "${vim_root}/plugged/copilot.vim" ]] ||
+  fail "Copilot plugin directory must be removed"
 
 rg -Fq 'let g:ide_enabled = 0' "${vim_root}/config/ide.vim" ||
   fail "IDE must be disabled by default"
-rg -Fq 'let g:ai_enabled = 0' "${vim_root}/config/ide.vim" ||
-  fail "AI must be disabled by default"
 rg -q '^set[[:space:]].*\bnonu\b' "${vim_root}/config/settings.vim" ||
   fail "Line numbers must be disabled"
 if rg -n \
@@ -88,18 +95,8 @@ if rg -n \
 fi
 rg -Fq '<leader>i' "${vim_root}/config/mappings.vim" ||
   fail "IDE toggle mapping is missing"
-rg -Fq '<leader>ai' "${vim_root}/config/mappings.vim" ||
-  fail "AI toggle mapping is missing"
 rg -Fq '<leader>m' "${vim_root}/config/mappings.vim" ||
   fail "Mouse toggle mapping is missing"
-ide_function="$(sed -n '/^function! TscuiteToggleIDE()/,/^endfunction$/p' \
-  "${vim_root}/config/ide.vim")"
-ai_function="$(sed -n '/^function! TscuiteToggleAI()/,/^endfunction$/p' \
-  "${vim_root}/config/ide.vim")"
-[[ "${ide_function}" != *Copilot* ]] ||
-  fail "IDE toggle must not control Copilot"
-[[ "${ai_function}" != *Coc* ]] ||
-  fail "AI toggle must not control CoC"
 if rg -n \
   '^[[:space:]]*(nnoremap|noremap|nmap)[[:space:]].*/ide' \
   "${vim_root}/vimrc" "${vim_root}/config/mappings.vim" ||
@@ -123,9 +120,9 @@ rg -Fq "g:vim_config_root . '/config/autocmds.vim'" "${vim_root}/vimrc" ||
 (( "$(wc -l <"${vim_root}/vimrc")" <= 10 )) ||
   fail "vimrc must remain a small loader"
 if rg -n \
-  'g:coc_global_extensions|function! s:Toggle(IDE|AI|Mouse)' \
+  'g:coc_global_extensions|function! s:Toggle(IDE|Mouse)' \
   "${vim_root}/vimrc"; then
-  fail "IDE, AI, or mouse configuration remains in vimrc"
+  fail "IDE or mouse configuration remains in vimrc"
 fi
 if rg -n 'autocmd FileType' "${vim_root}/vimrc"; then
   fail "FileType configuration remains in vimrc"
@@ -141,8 +138,6 @@ if rg -n \
 fi
 rg -Fq '`\i`' "${vim_root}/docs/README.md" ||
   fail "README must document the IDE switch"
-rg -Fq '`\ai`' "${vim_root}/docs/README.md" ||
-  fail "README must document the AI switch"
 rg -Fq 'FocusGained,BufEnter,CursorHold,CursorHoldI' \
   "${vim_root}/config/autocmds.vim" ||
   fail "External file changes must be checked while Vim is idle"

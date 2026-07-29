@@ -36,10 +36,9 @@ nnoremap <silent> <leader>o :CocList outline<CR>
 
 " 功能开关
 nnoremap <silent> <leader>i :call TscuiteToggleIDE()<CR>
-nnoremap <silent> <leader>ai :call TscuiteToggleAI()<CR>
 nnoremap <silent> <leader>m :call TscuiteToggleMouse()<CR>
 
-" 补全与 AI
+" 补全
 inoremap <silent><expr> <Tab> !g:ide_enabled ? "\<Tab>" :
       \ coc#pum#visible() ? coc#pum#next(1) :
       \ TscuiteCheckBackspace() ? "\<Tab>" : coc#refresh()
@@ -48,5 +47,3 @@ inoremap <silent><expr> <S-Tab> g:ide_enabled && coc#pum#visible()
 inoremap <silent><expr> <CR> g:ide_enabled && coc#pum#visible()
       \ ? coc#pum#confirm() : "\<C-G>u\<CR>"
 inoremap <silent><expr> <C-K> g:ide_enabled ? coc#refresh() : "\<C-K>"
-inoremap <silent><script><expr> <C-J> g:ai_enabled
-      \ ? copilot#Accept("\<CR>") : "\<C-J>"

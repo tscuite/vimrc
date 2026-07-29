@@ -5,7 +5,7 @@
 - `config/plugins.vim`：插件声明和插件参数
 - `config/settings.vim`：基础编辑与界面设置
 - `config/mappings.vim`：全部快捷键
-- `config/ide.vim`：IDE、AI 和鼠标功能
+- `config/ide.vim`：IDE 和鼠标功能
 - `config/filetypes.vim`：各语言缩进
 - `config/autocmds.vim`：自动刷新等事件
 
@@ -99,15 +99,11 @@ VIM_JAVA_TOOLING_HOME=/path/to/jdk-21 \
 | 快捷键 | 功能 |
 | --- | --- |
 | `\i` | 开启/关闭 IDE（CoC） |
-| `\ai` | 开启/关闭 AI（Copilot） |
 | `\m` | 开启/关闭鼠标支持 |
 
 IDE 默认关闭，只加载基础编辑、搜索、文件树和 Git，不启动 CoC、JDT.LS
 或 Gradle。普通模式按 `\i` 开启；再次按 `\i` 会关闭 IDE 并停止 CoC
 和对应语言服务，无需重启 Vim。
-
-AI 同样默认关闭。按 `\ai` 单独开启 Copilot，再次按下会关闭并停止它的
-后台服务；它与 IDE 开关互不影响。
 
 鼠标默认关闭。按 `\m` 开启后可以点击、选择和滚动；再次按下恢复纯键盘
 操作。不要使用 `Ctrl-M`，它在终端 Vim 中等同于回车键。
@@ -146,11 +142,6 @@ Leader 是反斜杠 `\`。
 
 插入模式使用 `Tab` / `Shift-Tab` 选择补全项，`Enter` 确认，`Ctrl-K`
 手动触发补全。
-
-### AI
-
-按 `\ai` 开启 Copilot 后，插入模式使用 `Ctrl-J` 接受建议；AI 关闭或
-没有建议时正常换行。
 
 ### 外部修改自动刷新
 
