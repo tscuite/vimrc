@@ -22,6 +22,20 @@ call assert_equal('', synIDattr(hlID('FoldColumn'), 'bg', 'cterm'))
 call assert_equal('', synIDattr(hlID('FoldColumn'), 'bg', 'gui'))
 call assert_equal(1, get(g:, 'java_ignore_markdown', 0))
 
+for s:function in [
+      \ 'TscuiteCheckBackspace',
+      \ 'TscuiteCoc',
+      \ 'TscuiteToggleIDE',
+      \ 'TscuiteToggleAI',
+      \ 'TscuiteToggleMouse',
+      \ ]
+  call assert_true(exists('*' . s:function), 'Missing function: ' . s:function)
+endfor
+call TscuiteToggleMouse()
+call assert_equal('a', &mouse, 'Mouse toggle must enable mouse support')
+call TscuiteToggleMouse()
+call assert_equal('', &mouse, 'Mouse toggle must restore disabled state')
+
 for s:key in [
       \ '\i', '\ai', '\m', '\p', '\f', '\b', '\h', '\e', '\c',
       \ '\gs', '\gd', '\gb', '\gp',

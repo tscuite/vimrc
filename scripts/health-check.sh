@@ -62,9 +62,12 @@ fi
 
 for config_file in \
   vimrc \
-  config/core.vim \
+  config/plugins.vim \
+  config/settings.vim \
+  config/mappings.vim \
   config/ide.vim \
   config/filetypes.vim \
+  config/autocmds.vim \
   snapshots/snapshot.vim; do
   if [[ -r "${vim_root}/${config_file}" ]]; then
     pass "config present: ${config_file}"
@@ -74,7 +77,7 @@ for config_file in \
 done
 
 if rg -Fq "\" let g:plug_url_format = 'https://bgithub.xyz/%s'" \
-  "${vim_root}/config/core.vim"; then
+  "${vim_root}/config/plugins.vim"; then
   pass 'legacy mirror is retained as a comment'
 else
   fail 'commented legacy mirror line is missing'
@@ -82,7 +85,7 @@ fi
 
 if rg -q \
   '^[[:space:]]*let[[:space:]]+g:plug_url_format.*bgithub\.xyz' \
-  "${vim_root}/config/core.vim"; then
+  "${vim_root}/config/plugins.vim"; then
   fail 'legacy mirror is active'
 else
   pass 'legacy mirror is disabled'

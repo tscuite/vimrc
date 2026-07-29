@@ -1,8 +1,13 @@
 # Vim 配置
 
-这是一个面向 macOS Vim 9 的精简配置。`~/.vimrc` 只负责加载配置；
-`config/core.vim` 保存插件和基础编辑，`config/ide.vim` 保存 IDE、AI 和鼠标，
-`config/filetypes.vim` 保存各语言的缩进设置。
+这是一个面向 macOS Vim 9 的精简配置。`~/.vimrc` 只负责加载配置：
+
+- `config/plugins.vim`：插件声明和插件参数
+- `config/settings.vim`：基础编辑与界面设置
+- `config/mappings.vim`：全部快捷键
+- `config/ide.vim`：IDE、AI 和鼠标功能
+- `config/filetypes.vim`：各语言缩进
+- `config/autocmds.vim`：自动刷新等事件
 
 ## 环境要求
 
@@ -26,7 +31,14 @@ bash ~/.vim/scripts/bootstrap.sh
 bash ~/.vim/scripts/health-check.sh
 ```
 
-主配置会自动加载 `config/` 中的三个文件，无需再创建额外软链接。
+主配置会自动加载 `config/` 中的配置文件，无需再创建额外软链接。
+
+以后新增插件改 `plugins.vim`，调整基础选项改 `settings.vim`，修改快捷键改
+`mappings.vim`。保存配置后，重新打开 Vim 或执行以下命令即可生效：
+
+```vim
+:source ~/.vimrc
+```
 
 ### Java 路径配置
 
@@ -76,7 +88,7 @@ VIM_JAVA_TOOLING_HOME=/path/to/jdk-21 \
 复制 JDK，也不会修改 `/Library/Java`。项目的 Java 版本仍为 17。
 
 `bootstrap.sh` 只从官方 GitHub 下载 Vim-Plug 和声明的插件。旧镜像配置
-仍保留在 `~/.vim/config/core.vim` 中，但已注释：
+仍保留在 `~/.vim/config/plugins.vim` 中，但已注释：
 
 ```vim
 " let g:plug_url_format = 'https://bgithub.xyz/%s'

@@ -11,9 +11,12 @@ fail() {
 
 for required_file in \
   vimrc \
-  config/core.vim \
+  config/plugins.vim \
+  config/settings.vim \
+  config/mappings.vim \
   config/ide.vim \
   config/filetypes.vim \
+  config/autocmds.vim \
   docs/README.md \
   snapshots/snapshot.vim \
   .gitignore \
@@ -58,17 +61,17 @@ run_assertions() {
 run_assertions lightweight
 
 rg -Fq "\" let g:plug_url_format = 'https://bgithub.xyz/%s'" \
-  "${vim_root}/config/core.vim" ||
+  "${vim_root}/config/plugins.vim" ||
   fail "disabled bgithub.xyz mirror line is missing"
 if rg -n \
   '^[[:space:]]*let[[:space:]]+g:plug_url_format.*bgithub\.xyz' \
-  "${vim_root}/config/core.vim"; then
+  "${vim_root}/config/plugins.vim"; then
   fail "bgithub.xyz mirror is active"
 fi
 
 if rg -n \
   "^\\s*Plug .*(YouCompleteMe|vim-flake8|vim-codefmt|vim-markdown|vim-go|vim-monokai-pro|vim-sleuth|tabular)" \
-  "${vim_root}/config/core.vim"; then
+  "${vim_root}/config/plugins.vim"; then
   fail "a redundant plugin is still declared"
 fi
 
@@ -76,22 +79,22 @@ rg -Fq 'let g:ide_enabled = 0' "${vim_root}/config/ide.vim" ||
   fail "IDE must be disabled by default"
 rg -Fq 'let g:ai_enabled = 0' "${vim_root}/config/ide.vim" ||
   fail "AI must be disabled by default"
-rg -q '^set[[:space:]].*\bnonu\b' "${vim_root}/config/core.vim" ||
+rg -q '^set[[:space:]].*\bnonu\b' "${vim_root}/config/settings.vim" ||
   fail "Line numbers must be disabled"
 if rg -n \
   '^[[:space:]]*(set[[:space:]]+(no)?termguicolors|set[[:space:]]+background=|(silent![[:space:]]+)?colorscheme)' \
-  "${vim_root}/config/core.vim"; then
+  "${vim_root}/config/settings.vim"; then
   fail "Terminal colors must not be overridden"
 fi
-rg -Fq '<leader>i' "${vim_root}/config/ide.vim" ||
+rg -Fq '<leader>i' "${vim_root}/config/mappings.vim" ||
   fail "IDE toggle mapping is missing"
-rg -Fq '<leader>ai' "${vim_root}/config/ide.vim" ||
+rg -Fq '<leader>ai' "${vim_root}/config/mappings.vim" ||
   fail "AI toggle mapping is missing"
-rg -Fq '<leader>m' "${vim_root}/config/ide.vim" ||
+rg -Fq '<leader>m' "${vim_root}/config/mappings.vim" ||
   fail "Mouse toggle mapping is missing"
-ide_function="$(sed -n '/^function! s:ToggleIDE()/,/^endfunction$/p' \
+ide_function="$(sed -n '/^function! TscuiteToggleIDE()/,/^endfunction$/p' \
   "${vim_root}/config/ide.vim")"
-ai_function="$(sed -n '/^function! s:ToggleAI()/,/^endfunction$/p' \
+ai_function="$(sed -n '/^function! TscuiteToggleAI()/,/^endfunction$/p' \
   "${vim_root}/config/ide.vim")"
 [[ "${ide_function}" != *Copilot* ]] ||
   fail "IDE toggle must not control Copilot"
@@ -99,17 +102,24 @@ ai_function="$(sed -n '/^function! s:ToggleAI()/,/^endfunction$/p' \
   fail "AI toggle must not control CoC"
 if rg -n \
   '^[[:space:]]*(nnoremap|noremap|nmap)[[:space:]].*/ide' \
-  "${vim_root}/vimrc" "${vim_root}/config/ide.vim" ||
+  "${vim_root}/vimrc" "${vim_root}/config/mappings.vim" ||
   rg -Fq 'command! IDE' \
-  "${vim_root}/vimrc" "${vim_root}/config/ide.vim"; then
+  "${vim_root}/vimrc" "${vim_root}/config/ide.vim" \
+  "${vim_root}/config/mappings.vim"; then
   fail "Only the Leader-i IDE toggle should remain"
 fi
 rg -Fq "g:vim_config_root . '/config/ide.vim'" "${vim_root}/vimrc" ||
   fail "vimrc must source ide.vim"
-rg -Fq "g:vim_config_root . '/config/core.vim'" "${vim_root}/vimrc" ||
-  fail "vimrc must source core.vim"
+rg -Fq "g:vim_config_root . '/config/plugins.vim'" "${vim_root}/vimrc" ||
+  fail "vimrc must source plugins.vim"
+rg -Fq "g:vim_config_root . '/config/settings.vim'" "${vim_root}/vimrc" ||
+  fail "vimrc must source settings.vim"
+rg -Fq "g:vim_config_root . '/config/mappings.vim'" "${vim_root}/vimrc" ||
+  fail "vimrc must source mappings.vim"
 rg -Fq "g:vim_config_root . '/config/filetypes.vim'" "${vim_root}/vimrc" ||
   fail "vimrc must source filetypes.vim"
+rg -Fq "g:vim_config_root . '/config/autocmds.vim'" "${vim_root}/vimrc" ||
+  fail "vimrc must source autocmds.vim"
 (( "$(wc -l <"${vim_root}/vimrc")" <= 10 )) ||
   fail "vimrc must remain a small loader"
 if rg -n \
@@ -120,17 +130,36 @@ fi
 if rg -n 'autocmd FileType' "${vim_root}/vimrc"; then
   fail "FileType configuration remains in vimrc"
 fi
+if rg -n \
+  '^[[:space:]]*(noremap|nnoremap|inoremap|xnoremap|nmap|imap|xmap)[[:space:]]' \
+  "${vim_root}/config/plugins.vim" \
+  "${vim_root}/config/settings.vim" \
+  "${vim_root}/config/ide.vim" \
+  "${vim_root}/config/filetypes.vim" \
+  "${vim_root}/config/autocmds.vim"; then
+  fail "Shortcut configuration must stay in mappings.vim"
+fi
 rg -Fq '`\i`' "${vim_root}/docs/README.md" ||
   fail "README must document the IDE switch"
 rg -Fq '`\ai`' "${vim_root}/docs/README.md" ||
   fail "README must document the AI switch"
 rg -Fq 'FocusGained,BufEnter,CursorHold,CursorHoldI' \
-  "${vim_root}/config/core.vim" ||
+  "${vim_root}/config/autocmds.vim" ||
   fail "External file changes must be checked while Vim is idle"
 rg -Fq ':checktime' "${vim_root}/docs/README.md" ||
   fail "README must document manual file refresh"
 rg -Fq '~/.vimrc' "${vim_root}/docs/README.md" ||
   fail "README must document the single vimrc entry point"
+for documented_config in \
+  plugins.vim \
+  settings.vim \
+  mappings.vim \
+  ide.vim \
+  filetypes.vim \
+  autocmds.vim; do
+  rg -Fq "config/${documented_config}" "${vim_root}/docs/README.md" ||
+    fail "README must document config/${documented_config}"
+done
 
 rg -Fq \
   'https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim' \
@@ -151,9 +180,12 @@ rg -Fq '/docs/plans/' "${vim_root}/.gitignore" ||
 
 for runtime_file in \
   vimrc \
-  config/core.vim \
+  config/plugins.vim \
+  config/settings.vim \
+  config/mappings.vim \
   config/ide.vim \
   config/filetypes.vim \
+  config/autocmds.vim \
   scripts/bootstrap.sh \
   scripts/health-check.sh \
   snapshots/snapshot.vim; do
