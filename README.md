@@ -4,7 +4,7 @@ This configuration replaces CoC's client/completion layer with:
 
 - Neovim 0.11 built-in LSP client (`vim.lsp.config` / `vim.lsp.enable`)
 - Neovim built-in LSP completion (`vim.lsp.completion`)
-- Vim's built-in default colors, using the terminal color palette
+- Vim's legacy light-background 16-color terminal palette
 - No external Neovim plugins
 - No `coc.nvim`, `nvim-cmp`, Mason, or `nvim-lspconfig`
 
