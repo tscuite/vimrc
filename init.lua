@@ -6,8 +6,8 @@ vim.g.mapleader = "\\"
 vim.g.maplocalleader = "\\"
 
 if vim.g.native_lsp_auto_start == nil then
-  -- Keep the old low-resource behaviour: press \i when IDE features are needed.
-  vim.g.native_lsp_auto_start = false
+  -- Only the server matching the current file type starts.
+  vim.g.native_lsp_auto_start = true
 end
 
 require("config.options")

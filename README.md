@@ -13,12 +13,12 @@ Neovim does not load anything from it.
 
 ## Resource policy
 
-Native LSP is off when Neovim starts, matching the old Vim configuration.
-Press `\i` to start only the server matching the current file type, and press
-`\i` again to stop all configured language-server processes.
+Native LSP starts automatically, but only the server matching the current file
+type is launched. Press `\i` to stop all configured language-server processes,
+and press `\i` again to start them.
 
-Set `vim.g.native_lsp_auto_start = true` before `require("config.lsp").setup()`
-in `init.lua` if automatic startup is preferred.
+Set `vim.g.native_lsp_auto_start = false` near the top of `init.lua` to restore
+manual startup.
 
 ## Main keys
 
