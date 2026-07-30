@@ -58,7 +58,8 @@
 | 格式化 | `\=` |
 | 行注释/取消注释 | `gcc` |
 | 选中后注释 | `gc` |
-| 切换绝对/相对行号 | `<leader>uL`（默认使用绝对行号） |
+| 显示/隐藏行号 | `<leader>ul`（默认隐藏） |
+| 切换相对行号 | `<leader>uL` |
 
 ## 查找
 
@@ -109,6 +110,16 @@ TypeScript 版本，并只在匹配的前端文件和项目中启动。
 | 补齐缺失的 import | `<leader>cM` |
 | 修复全部 TypeScript 诊断 | `<leader>cD` |
 | 选择 TypeScript 版本 | `<leader>cV` |
+
+Rust 使用 `rustaceanvim` 和 rustup 管理的 `rust-analyzer`。当前在 Neovim 0.12.4、Rust 1.97.1
+上验证；打开 `.rs` 文件后按 `\i` 开启，补全会在插入模式下自动出现。
+
+| Rust 专用操作 | 快捷键 |
+| --- | --- |
+| 手动唤出补全 | `<C-Space>` |
+| Rust 代码操作 | `<leader>cR` |
+| 选择并运行目标 | `:RustLsp runnables` |
+| 展开光标下的宏 | `:RustLsp expandMacro` |
 
 ## 窗口
 

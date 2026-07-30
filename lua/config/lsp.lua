@@ -32,7 +32,7 @@ end
 
 local function stop_client(client)
   remember(client)
-  if client.name ~= "jdtls" then
+  if client.name ~= "jdtls" and client.name ~= "rust-analyzer" then
     pcall(vim.lsp.enable, client.name, false)
   end
   client:stop()
@@ -72,6 +72,20 @@ local function restart_jdtls(entry)
   end
 end
 
+local function restart_rust_analyzer(entry)
+  local attached = false
+  for _, bufnr in ipairs(entry.buffers) do
+    if vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].filetype == "rust" then
+      require("rustaceanvim.lsp").start(bufnr)
+      attached = true
+    end
+  end
+
+  if not attached and vim.bo.filetype == "rust" then
+    require("rustaceanvim.lsp").start(0)
+  end
+end
+
 function M.start()
   vim.g.ide_enabled = true
 
@@ -81,6 +95,8 @@ function M.start()
   for _, entry in pairs(stopped) do
     if entry.name == "jdtls" then
       restart_jdtls(entry)
+    elseif entry.name == "rust-analyzer" then
+      restart_rust_analyzer(entry)
     elseif not enabled[entry.name] then
       pcall(vim.lsp.enable, entry.name, true)
       enabled[entry.name] = true
@@ -137,11 +153,13 @@ function M.setup()
   vim.api.nvim_create_autocmd("VimLeavePre", {
     group = group,
     callback = function()
-      for _, client in ipairs(vim.lsp.get_clients({ name = "jdtls" })) do
-        client:stop(true)
+      for _, name in ipairs({ "jdtls", "rust-analyzer" }) do
+        for _, client in ipairs(vim.lsp.get_clients({ name = name })) do
+          client:stop(true)
+        end
       end
     end,
-    desc = "Stop jdtls before Neovim exits",
+    desc = "Stop manually managed language servers before Neovim exits",
   })
 
   vim.api.nvim_create_user_command("LspToggle", M.toggle, { desc = "Toggle all LSP clients" })
