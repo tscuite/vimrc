@@ -13,8 +13,8 @@
 ## 切换主题
 
 - 按 `<leader>uC`（`Space`、`u`、大写 `C`）打开主题选择器。
-- 用 `j` / `k` 选择并实时预览，`Enter` 应用，`Esc` 取消。
-- 当前默认主题是透明背景的 `tokyonight-moon`。
+- 用 `j` / `k` 选择并实时预览，`Enter` 应用并保存，`Esc` 取消且不修改已保存主题。
+- 第一次使用时的默认主题是透明背景的 `tokyonight-moon`；以后启动会自动恢复上次按 `Enter` 保存的主题。
 - 所有主题（包括选择器中的实时预览）都会沿用终端的透明背景。
 - 已安装的主题家族：
   - TokyoNight：`tokyonight-day`、`tokyonight-moon`、`tokyonight-night`、`tokyonight-storm`
@@ -23,7 +23,7 @@
   - Kanagawa：`kanagawa-wave`、`kanagawa-dragon`、`kanagawa-lotus`
   - Nightfox：`nightfox`、`dayfox`、`dawnfox`、`duskfox`、`nordfox`、`terafox`、`carbonfox`
   - Gruvbox：`gruvbox`
-- 选择器切换只影响当前会话；永久修改需要更新 `lua/plugins/colorscheme.lua`。
+- 想恢复默认主题时，在选择器中重新选择 `tokyonight-moon` 并按 `Enter`。
 
 ## 打开、进入和关闭文件
 
@@ -94,6 +94,7 @@
 
 Java 使用 `jdtls`。语言服务器由本机 Java 21 启动，Gradle 项目使用本机 `JAVA_HOME`（当前为 Java 17）。
 退出 Neovim 时会显式关闭 `jdtls`，Gradle 导入也禁用了常驻 daemon，避免 Java 进程残留。
+同时禁止在源码目录生成 Eclipse 的 `.project`、`.classpath` 和 `.settings` 元数据。
 
 ## 窗口
 

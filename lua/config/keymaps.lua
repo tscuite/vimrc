@@ -24,6 +24,11 @@ legacy("n", "c", function()
   Snacks.picker.commands()
 end, "Commands")
 
+-- Save the confirmed colorscheme and restore it on the next launch.
+map("n", "<leader>uC", function()
+  require("config.theme").pick()
+end, { desc = "Colorscheme (Persistent)" })
+
 -- Save and quit.
 legacy("n", "w", "<cmd>write<cr>", "Write")
 legacy("n", "q", "<cmd>quit<cr>", "Quit")

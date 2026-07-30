@@ -1,9 +1,11 @@
 return {
   {
     "LazyVim/LazyVim",
-    opts = {
-      colorscheme = "tokyonight-moon",
-    },
+    opts = function(_, opts)
+      opts.colorscheme = function()
+        require("config.theme").apply()
+      end
+    end,
   },
   {
     "folke/tokyonight.nvim",

@@ -54,11 +54,13 @@ return {
         "--jvm-arg=-Xmx1g",
         "--jvm-arg=-XX:ActiveProcessorCount=2",
         "--jvm-arg=-Djava.awt.headless=true",
+        "--jvm-arg=-Djava.import.generatesMetadataFilesAtProjectRoot=false",
       })
 
       opts.settings = vim.tbl_deep_extend("force", opts.settings or {}, {
         java = {
           import = {
+            generatesMetadataFilesAtProjectRoot = false,
             gradle = {
               java = { home = project_home },
               arguments = "--no-daemon --max-workers=1 --no-parallel",
