@@ -8,6 +8,10 @@ vim.g.maplocalleader = ","
 -- Keep terminal selection behavior unless mouse support is explicitly enabled.
 vim.opt.mouse = ""
 
+-- Show real line numbers on every line instead of relative distances.
+vim.opt.number = true
+vim.opt.relativenumber = false
+
 -- Start without language servers. Press \i to enable them for the current session.
 vim.g.ide_enabled = false
 require("config.lsp").setup()
