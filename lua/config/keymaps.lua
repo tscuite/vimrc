@@ -29,6 +29,58 @@ legacy("n", "w", "<cmd>write<cr>", "Write")
 legacy("n", "q", "<cmd>quit<cr>", "Quit")
 legacy("n", "x", "<cmd>xit<cr>", "Write and Quit")
 
+-- Keep the previous global LSP jumps. LazyVim's buffer-local mappings can
+-- override these after attachment, but these remain available during startup.
+local function has_client(method)
+  return vim.g.ide_enabled ~= false and #vim.lsp.get_clients({ bufnr = 0, method = method }) > 0
+end
+
+local function lsp_action(method, action, fallback)
+  return function()
+    if has_client(method) then
+      action()
+    elseif fallback then
+      fallback()
+    else
+      vim.notify("当前文件没有支持此功能的 LSP；按 \\i 开启 LSP", vim.log.levels.INFO)
+    end
+  end
+end
+
+local function goto_definition()
+  if has_client("textDocument/definition") then
+    vim.lsp.buf.definition()
+  elseif has_client("textDocument/declaration") then
+    vim.lsp.buf.declaration()
+  else
+    vim.notify("LSP 尚未就绪，暂时使用 Vim 的当前文件跳转", vim.log.levels.INFO)
+    vim.cmd("normal! gd")
+  end
+end
+
+map("n", "gd", goto_definition, { silent = true, desc = "Definition" })
+map("n", "gD", lsp_action("textDocument/declaration", vim.lsp.buf.declaration), {
+  silent = true,
+  desc = "Declaration",
+})
+map("n", "gr", lsp_action("textDocument/references", vim.lsp.buf.references), {
+  silent = true,
+  nowait = true,
+  desc = "References",
+})
+map("n", "gi", lsp_action("textDocument/implementation", vim.lsp.buf.implementation), {
+  silent = true,
+  desc = "Implementation",
+})
+map(
+  "n",
+  "K",
+  lsp_action("textDocument/hover", vim.lsp.buf.hover, function()
+    vim.cmd("normal! K")
+  end),
+  { silent = true, desc = "Hover" }
+)
+
 -- Code actions.
 legacy({ "n", "x" }, "a", vim.lsp.buf.code_action, "Code Action")
 legacy("n", "r", vim.lsp.buf.rename, "Rename")
@@ -38,27 +90,10 @@ end, "Format")
 legacy("n", "l", "<cmd>Trouble diagnostics toggle<cr>", "Diagnostics")
 legacy("n", "o", "<cmd>Trouble symbols toggle<cr>", "Document Symbols")
 
--- Preserve the old LSP switch. When nothing has been disabled yet, show LSP info.
-local disabled_lsp = {}
-legacy("n", "i", function()
-  local clients = vim.lsp.get_clients()
-  if #clients > 0 then
-    for _, client in ipairs(clients) do
-      disabled_lsp[client.name] = true
-      pcall(vim.lsp.enable, client.name, false)
-      client:stop()
-    end
-    vim.notify("LSP 已关闭")
-  elseif next(disabled_lsp) then
-    for name in pairs(disabled_lsp) do
-      pcall(vim.lsp.enable, name, true)
-    end
-    disabled_lsp = {}
-    vim.notify("LSP 已开启")
-  else
-    Snacks.picker.lsp_config()
-  end
-end, "Toggle LSP")
+-- Keep the previous global IDE switch, including manually managed jdtls clients.
+local lsp = require("config.lsp")
+lsp.setup()
+legacy("n", "i", lsp.toggle, "Toggle LSP")
 
 legacy("n", "m", function()
   vim.opt.mouse = vim.o.mouse == "" and "a" or ""

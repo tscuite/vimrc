@@ -4,3 +4,6 @@
 
 -- Reserve backslash for the previous global shortcuts.
 vim.g.maplocalleader = ","
+
+-- Keep terminal selection behavior unless mouse support is explicitly enabled.
+vim.opt.mouse = ""
