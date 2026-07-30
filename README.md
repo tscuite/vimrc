@@ -18,7 +18,8 @@ type is launched. Press `\i` to stop all configured language-server processes,
 and press `\i` again to start them.
 
 Java uses one JDTLS client per active project. Its Gradle import is limited to
-one worker, a 1 GiB heap, and a short daemon idle timeout.
+one worker, a 1 GiB heap, and a short daemon idle timeout. JDTLS explicitly
+loads Lombok processors from the project classpath and runs in headless mode.
 
 Set `vim.g.native_lsp_auto_start = false` near the top of `init.lua` to restore
 manual startup.

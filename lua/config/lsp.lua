@@ -333,7 +333,13 @@ if java_available then
         gradle = {
           java = { home = java_project_home },
           arguments = "--max-workers=1 --no-parallel -Dorg.gradle.daemon.idletimeout=60000",
-          jvmArguments = "-Xms128m -Xmx1g -XX:MaxMetaspaceSize=384m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8",
+          jvmArguments = "-Xms128m -Xmx1g -XX:MaxMetaspaceSize=384m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8 -Djava.awt.headless=true",
+          annotationProcessing = { enabled = true },
+        },
+      },
+      jdt = {
+        ls = {
+          lombokSupport = { enabled = true },
         },
       },
       configuration = {
@@ -359,6 +365,7 @@ if java_available then
         "--jvm-arg=-Xms128m",
         "--jvm-arg=-Xmx1g",
         "--jvm-arg=-XX:ActiveProcessorCount=2",
+        "--jvm-arg=-Djava.awt.headless=true",
         "-data",
         workspace,
       }, dispatchers, {
