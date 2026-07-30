@@ -89,17 +89,27 @@ local function lsp_action(method, action, fallback)
   end
 end
 
--- Keep the old IDE keys, now backed only by Neovim's built-in LSP client.
-map(
-  "n",
-  "gd",
-  lsp_action("textDocument/definition", vim.lsp.buf.definition, function()
+local function goto_definition()
+  if has_client("textDocument/definition") then
+    vim.lsp.buf.definition()
+  elseif has_client("textDocument/declaration") then
+    -- JDTLS advertises declarationProvider instead of definitionProvider.
+    vim.lsp.buf.declaration()
+  else
+    vim.notify("LSP 尚未就绪，暂时使用 Vim 的当前文件跳转", vim.log.levels.INFO)
     vim.cmd("normal! gd")
-  end),
-  { silent = true, desc = "Definition" }
-)
+  end
+end
+
+-- Keep the old IDE keys, now backed only by Neovim's built-in LSP client.
+map("n", "gd", goto_definition, { silent = true, desc = "Definition" })
+map("n", "gD", lsp_action("textDocument/declaration", vim.lsp.buf.declaration), {
+  silent = true,
+  desc = "Declaration",
+})
 map("n", "gr", lsp_action("textDocument/references", vim.lsp.buf.references), {
   silent = true,
+  nowait = true,
   desc = "References",
 })
 map("n", "gi", lsp_action("textDocument/implementation", vim.lsp.buf.implementation), {

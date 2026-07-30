@@ -327,15 +327,38 @@ end
 local java_available = jdtls and java_tooling
 local java_config
 if java_available then
+  local java_settings = {
+    java = {
+      import = {
+        gradle = {
+          java = { home = java_project_home },
+          arguments = "--max-workers=1 --no-parallel -Dorg.gradle.daemon.idletimeout=60000",
+          jvmArguments = "-Xms128m -Xmx1g -XX:MaxMetaspaceSize=384m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8",
+        },
+      },
+      configuration = {
+        runtimes = {
+          { name = "JavaSE-17", path = java_project_home, default = true },
+        },
+      },
+      maxConcurrentBuilds = 1,
+    },
+  }
+
   java_config = {
     cmd = function(dispatchers, config)
       local root = config.root_dir or vim.fn.getcwd()
-      local workspace = vim.fn.stdpath("cache") .. "/jdtls/workspace/" .. vim.fn.sha256(root):sub(1, 16)
+      -- v2 intentionally starts with a clean Eclipse workspace.  The previous
+      -- cache can become unusable after Gradle projects are moved or renamed.
+      local workspace = vim.fn.stdpath("cache") .. "/jdtls/workspace-v2/" .. vim.fn.sha256(root):sub(1, 16)
       vim.fn.mkdir(workspace, "p")
       return vim.lsp.rpc.start({
         jdtls,
         "--java-executable",
         java_tooling,
+        "--jvm-arg=-Xms128m",
+        "--jvm-arg=-Xmx1g",
+        "--jvm-arg=-XX:ActiveProcessorCount=2",
         "-data",
         workspace,
       }, dispatchers, {
@@ -350,22 +373,13 @@ if java_available then
       { "mvnw", "gradlew", "settings.gradle", "settings.gradle.kts", ".git" },
       { "build.xml", "pom.xml", "build.gradle", "build.gradle.kts" },
     },
-    settings = {
-      java = {
-        import = {
-          gradle = {
-            java = { home = java_project_home },
-            arguments = "-Dorg.gradle.daemon.idletimeout=1000",
-          },
-        },
-        configuration = {
-          runtimes = {
-            { name = "JavaSE-17", path = java_project_home, default = true },
-          },
-        },
-      },
+    settings = java_settings,
+    -- JDTLS starts the Gradle import during initialization, before the normal
+    -- workspace/didChangeConfiguration notification.  Supplying the same
+    -- settings here makes the resource limits effective for the first import.
+    init_options = {
+      settings = vim.deepcopy(java_settings),
     },
-    init_options = {},
   }
 end
 add("jdtls", "Java", jdtls_system and "PATH" or "existing CoC server cache", java_available and jdtls or nil, java_config, "brew install jdtls")

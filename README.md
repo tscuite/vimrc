@@ -17,6 +17,9 @@ Native LSP starts automatically, but only the server matching the current file
 type is launched. Press `\i` to stop all configured language-server processes,
 and press `\i` again to start them.
 
+Java uses one JDTLS client per active project. Its Gradle import is limited to
+one worker, a 1 GiB heap, and a short daemon idle timeout.
+
 Set `vim.g.native_lsp_auto_start = false` near the top of `init.lua` to restore
 manual startup.
 
@@ -25,7 +28,7 @@ manual startup.
 | Key | Action |
 | --- | --- |
 | `\i` | Start/stop native LSP |
-| `gd`, `gr`, `gi`, `K` | Definition, references, implementation, hover |
+| `gd`, `gD`, `gr`, `gi`, `K` | Definition, declaration, references, implementation, hover |
 | `[g`, `]g` | Previous/next diagnostic |
 | `\a`, `\r`, `\=` | Code action, rename, format |
 | `\l`, `\o` | Diagnostics, document symbols |
