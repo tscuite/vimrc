@@ -35,6 +35,8 @@ opt.shortmess:append("c")
 opt.mouse = ""
 opt.grepprg = "rg --vimgrep --smart-case"
 opt.grepformat = "%f:%l:%c:%m"
+opt.background = "light"
+opt.termguicolors = false
 
 if vim.fn.has("macunix") == 1 and vim.fn.has("clipboard") == 1 then
   opt.clipboard = "unnamedplus"
@@ -47,5 +49,6 @@ opt.undofile = true
 
 vim.cmd("filetype plugin indent on")
 vim.cmd("syntax enable")
+vim.cmd.colorscheme("vim")
 vim.cmd("highlight SignColumn ctermbg=NONE guibg=NONE")
 vim.cmd("highlight FoldColumn ctermbg=NONE guibg=NONE")
