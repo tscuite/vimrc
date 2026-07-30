@@ -80,6 +80,8 @@
 | 操作 | 快捷键 |
 | --- | --- |
 | 跳到定义 | `gd` |
+| 在右侧新分屏跳到定义 | `<C-w>v`，然后按 `gd` |
+| 在下方新分屏跳到定义 | `<C-w>s`，然后按 `gd` |
 | 查找所有引用 | `gr` |
 | 跳到实现 | `gi` 或 `gI` |
 | 跳到类型定义 | `gy` |
@@ -96,6 +98,17 @@
 Java 使用 `jdtls`。语言服务器由本机 Java 21 启动，Gradle 项目使用本机 `JAVA_HOME`（当前为 Java 17）。
 退出 Neovim 时会显式关闭 `jdtls`，Gradle 导入也禁用了常驻 daemon，避免 Java 进程残留。
 同时禁止在源码目录生成 Eclipse 的 `.project`、`.classpath` 和 `.settings` 元数据。
+
+TypeScript、TSX、JavaScript 和 JSX 使用 `vtsls`。同样先按 `\i` 开启 LSP；它会优先使用项目内的
+TypeScript 版本，并只在匹配的前端文件和项目中启动。
+
+| TypeScript 专用操作 | 快捷键 |
+| --- | --- |
+| 跳到源码定义 | `gD` |
+| 查找当前文件的全部引用 | `gR` |
+| 补齐缺失的 import | `<leader>cM` |
+| 修复全部 TypeScript 诊断 | `<leader>cD` |
+| 选择 TypeScript 版本 | `<leader>cV` |
 
 ## 窗口
 
