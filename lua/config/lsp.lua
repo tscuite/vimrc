@@ -1,6 +1,7 @@
 local M = {}
 
 local stopped = {}
+local deferred = {}
 local setup_done = false
 
 local function client_key(client)
@@ -37,6 +38,16 @@ local function stop_client(client)
   client:stop()
 end
 
+function M.defer_start(name, key, start)
+  if vim.g.ide_enabled ~= false then
+    return false
+  end
+
+  deferred[name] = deferred[name] or {}
+  deferred[name][key] = start
+  return true
+end
+
 function M.stop()
   vim.g.ide_enabled = false
   for _, client in ipairs(vim.lsp.get_clients()) do
@@ -64,6 +75,8 @@ end
 function M.start()
   vim.g.ide_enabled = true
 
+  local deferred_starts = deferred
+  deferred = {}
   local enabled = {}
   for _, entry in pairs(stopped) do
     if entry.name == "jdtls" then
@@ -75,6 +88,16 @@ function M.start()
   end
 
   stopped = {}
+
+  for _, starts in pairs(deferred_starts) do
+    for _, start in pairs(starts) do
+      local ok, err = pcall(start)
+      if not ok then
+        vim.notify("LSP 启动失败: " .. err, vim.log.levels.ERROR)
+      end
+    end
+  end
+
   vim.notify("LSP 已开启")
 end
 
@@ -91,7 +114,9 @@ function M.setup()
     return
   end
   setup_done = true
-  vim.g.ide_enabled = vim.g.ide_enabled ~= false
+  if vim.g.ide_enabled == nil then
+    vim.g.ide_enabled = false
+  end
 
   local group = vim.api.nvim_create_augroup("tscuite_lsp_toggle", { clear = true })
 

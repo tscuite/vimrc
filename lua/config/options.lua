@@ -7,3 +7,7 @@ vim.g.maplocalleader = ","
 
 -- Keep terminal selection behavior unless mouse support is explicitly enabled.
 vim.opt.mouse = ""
+
+-- Start without language servers. Press \i to enable them for the current session.
+vim.g.ide_enabled = false
+require("config.lsp").setup()

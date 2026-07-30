@@ -11,6 +11,33 @@ return {
   {
     "mfussenegger/nvim-jdtls",
     opts = function(_, opts)
+      local jdtls = require("jdtls")
+      if not jdtls._tscuite_deferred_start then
+        local start_or_attach = jdtls.start_or_attach
+
+        jdtls.start_or_attach = function(config, ...)
+          local bufnr = vim.api.nvim_get_current_buf()
+          local key = ("%d:%s"):format(bufnr, config.root_dir or "")
+          local args = { ... }
+          local delayed_config = vim.deepcopy(config)
+
+          if
+            require("config.lsp").defer_start("jdtls", key, function()
+              if vim.api.nvim_buf_is_loaded(bufnr) and vim.bo[bufnr].filetype == "java" then
+                vim.api.nvim_buf_call(bufnr, function()
+                  start_or_attach(delayed_config, unpack(args))
+                end)
+              end
+            end)
+          then
+            return
+          end
+
+          return start_or_attach(config, unpack(args))
+        end
+        jdtls._tscuite_deferred_start = true
+      end
+
       local tooling_home = macos_java_home("21")
       local project_home = vim.env.JAVA_HOME
 
