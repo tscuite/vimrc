@@ -1,6 +1,15 @@
 # Neovim / LazyVim 配置
 
-这是基于 [LazyVim](https://www.lazyvim.org/) 的个人 Neovim 配置。
+这是基于 [LazyVim](https://www.lazyvim.org/) 的个人 Neovim 配置。在默认 LazyVim 的基础上做了一些个人化调整，目标是平时保持极简、需要时再按需开启 IDE 能力。
+
+## 配置特点
+
+- **双前缀体系**：`<leader>`（空格）承担 LazyVim 全部现代快捷键，`\` 保留给一套更短的旧 Vim 风格快捷键。
+- **LSP 默认关闭**：启动时不拉起任何语言服务器，保持轻量；需要跳转、补全、诊断时按 `\i` 开启，再按一次关闭。
+- **鼠标默认关闭**：让终端原生的选择 / 复制行为不受影响；需要 Neovim 接管鼠标时按 `\m` 临时开启。
+- **行号默认隐藏**：保持左侧 gutter 干净；需要时用 `<leader>ul` / `<leader>uL` 开启绝对 / 相对行号。
+- **透明背景 + 主题持久化**：所有主题沿用终端透明背景，按 `<leader>uC` 选择的主题会在下次启动时自动恢复。
+- **多语言 LSP**：内置 Java（`jdtls`）、Rust（`rust-analyzer`）、TypeScript / JavaScript（`vtsls`）的配置，均在开启 LSP 后按需启动。
 
 ## 先记住两个前缀
 
